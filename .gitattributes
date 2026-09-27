@@ -1,0 +1,15 @@
+# cmd.exe shreds LF-only batch files (eats chars across line boundaries) —
+# launcher bug of 2026-07-02. Batch files are ALWAYS CRLF, everywhere.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Shell hook scripts run by sh (git hooks) must stay LF-only regardless of
+# core.autocrlf on the checkout machine — a CRLF shebang line breaks the
+# interpreter. Card 2ee755d4-fe86-4baf-80ec-b29072162533.
+scripts/hooks/* text eol=lf
+
+# Everything else: normalize to LF in repo, native on checkout
+* text=auto
+*.png binary
+*.jpg binary
+*.docx binary

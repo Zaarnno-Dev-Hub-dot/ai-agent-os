@@ -1,0 +1,55 @@
+#!/bin/sh
+# CRLF gatekeeper — pre-commit hook (team sprint card 2ee755d4-fe86-4baf-80ec-b29072162533)
+#
+# Why: cmd.exe mis-parses LF-only .cmd/.bat files on double-click (bug repeated 5x in one
+# week across 3 models). This hook makes CRLF-for-.cmd/.bat a machine guarantee instead of
+# a discipline problem.
+#
+# What it does: for every staged .cmd/.bat file, normalizes line endings to CRLF and
+# writes the blob straight into the index via `git hash-object --no-filters` +
+# `git update-index --cacheinfo`, bypassing git's own clean filter. Plain `git add` is not
+# enough: on any machine with core.autocrlf=true/input (common default), git silently
+# converts CRLF back to LF when it computes the blob to store — so a naive
+# fix-then-`git add` still commits an LF-only file. This hook checks the actual blob that
+# would be committed, not just the working-tree file, and force-writes the real fix.
+#
+# Auto-fix-and-restage, not block — least friction, and it never loses content, only
+# normalizes line endings.
+#
+# Canonical reusable copy: scripts/hooks/pre-commit in agent-os.
+# This file (.git/hooks/pre-commit) is a local, uncommitted install — .git/hooks is never
+# version-controlled, so re-run the install step after a fresh clone.
+
+files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.cmd' '*.bat')
+[ -z "$files" ] && exit 0
+
+changed=0
+old_ifs="$IFS"
+IFS='
+'
+for f in $files; do
+    [ -f "$f" ] || continue
+
+    tmp="$(mktemp)"
+    # Strip any existing CR at end-of-line, then add CR before every LF.
+    # Idempotent: an already-CRLF working-tree file comes out byte-identical.
+    sed 's/\r$//' "$f" | sed 's/$/\r/' > "$tmp"
+    mv "$tmp" "$f"
+
+    # Write the CRLF-normalized bytes straight to the object DB, bypassing the
+    # core.autocrlf clean filter entirely, then point the index at that exact blob.
+    sha=$(git hash-object -w --no-filters -- "$f")
+    staged_sha=$(git rev-parse --quiet --verify ":$f" 2>/dev/null || true)
+    if [ "$sha" != "$staged_sha" ]; then
+        git update-index --add --cacheinfo 100644,"$sha","$f"
+        echo "pre-commit: CRLF gatekeeper normalized + force-staged (bypassing autocrlf) -> $f"
+        changed=1
+    fi
+done
+IFS="$old_ifs"
+
+if [ "$changed" = "1" ]; then
+    echo "pre-commit: CRLF gatekeeper fixed the file(s) above. Commit continuing."
+fi
+
+exit 0

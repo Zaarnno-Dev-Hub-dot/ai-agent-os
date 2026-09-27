@@ -1,0 +1,3236 @@
+:root {
+  --bg: #0b0d10;
+  --panel: #12151a;
+  --panel2: #171b21;
+  --line: #232a33;
+  --txt: #e8eaed;
+  --dim: #9aa4b0;
+  --faint: #5c6672;
+  --accent-green: #1e7a57;
+  --accent-gold: #d4a95f;
+  --ok: #3fb950;
+  --warn: #d29922;
+  --bad: #f85149;
+  /* TEMP-agent "on duty" badge (2026-08-02) — cyan/blue-violet, distinct from --ok/--warn/--faint. */
+  --temp: #8a7dfa;
+
+  /* Translucent glass
+     recipe shared by the topbar/sidebar/chat column/rails. Fixed rgba(11,13,16,.72)
+     + 14px blur per the design doc; @supports fallback below restores solid
+     --panel on browsers without backdrop-filter. */
+  --glass-bg: rgba(11, 13, 16, 0.72);
+  --glass-blur: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ---------- Backdrop ----------
+   Soft layered gradients behind the translucent glass panels (see --glass-bg
+   on .topbar/.sidebar/.chat/rails below). Pure CSS — no image assets. */
+body {
+  background-color: var(--bg);
+  background-attachment: fixed;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 0%, rgba(30, 122, 87, 0.28), transparent 70%),
+    radial-gradient(ellipse 70% 55% at 90% 100%, rgba(212, 169, 95, 0.16), transparent 70%),
+    linear-gradient(180deg, #0e1216 0%, #0b0d10 100%);
+  color: var(--txt);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* prefers-reduced-motion (Hard constraint): fixed attachment reads as subtle
+   parallax when panels/lists scroll over it — drop to normal scroll-with-page. */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
+/* Hard constraint: "no-backdrop-filter... paths render sanely" — browsers that
+   can't blur fall back to today's fully solid --panel (no photo bleed-through,
+   so there's no legibility cost to losing the blur). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .topbar,
+  .sidebar,
+  .chat,
+  .inspect-panel,
+  .files-rail,
+  .memory-rail,
+  .polls-rail {
+    background: var(--panel);
+  }
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+/* Brand mark (crest + wordmark) used to live here too, duplicating the
+   sidebar's own title. It now renders
+   exactly once, stacked, in .sidebar-brand-mark below — top bar is
+   functional-status-only. */
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--dim);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 13px;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.meter {
+  width: 200px;
+}
+
+.meter .lbl {
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-bottom: 3px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.meter .bar {
+  height: 5px;
+  background: var(--panel2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.meter .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-gold));
+}
+
+/* Secondary USD line — only rendered when a room/agent has real (api-billed)
+   cost > 0; see TopBar.tsx and InspectPanel.tsx comments. */
+.meter-usd {
+  font-size: 10px;
+  color: var(--faint);
+  margin-top: 3px;
+  text-align: right;
+}
+
+/* ---------- Layout shell ---------- */
+
+.main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ---------- Sidebar ---------- */
+
+.sidebar {
+  width: 264px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid var(--line);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed {
+  width: 20px;
+  padding: 16px 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sidebar-header {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Stacked crest-above-title brand mark (the operator's preferred treatment,
+   replacing the old horizontal topbar brand + separate sidebar text line —
+   this is now the ONLY place the mark renders). Crest sized up a little
+   from its old topbar dimensions since it's now the sole, centered focal
+   point of the header rather than one element in a row. */
+.sidebar-brand-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: Georgia, 'Times New Roman', serif;
+  text-align: center;
+}
+
+.sidebar-brand-crest {
+  width: 40px;
+  height: 48px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.sidebar-brand-word {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  max-width: 100%;
+}
+
+.sidebar-brand-word-small {
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.sidebar-brand-word-large {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--accent-gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapse-handle {
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.sect {
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  color: var(--faint);
+  margin: 12px 8px 6px;
+  text-transform: uppercase;
+}
+
+.room {
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--dim);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  position: relative; /* anchors .room-menu */
+}
+
+.room:hover {
+  background: var(--panel2);
+}
+
+.room.active {
+  background: rgba(30, 122, 87, 0.18);
+  color: var(--txt);
+  border: 1px solid rgba(30, 122, 87, 0.45);
+}
+
+.room .h {
+  color: var(--faint);
+}
+
+.unread-badge {
+  margin-left: auto;
+  background: var(--accent-gold);
+  color: #0b0d10;
+  border-radius: 9px;
+  font-size: 10px;
+  padding: 1px 7px;
+  font-weight: 700;
+}
+
+.agent {
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.agent:hover {
+  background: var(--panel2);
+}
+
+.agent.self-row {
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+  cursor: default;
+}
+
+.agent.self-row:hover {
+  background: none;
+}
+
+.av {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.vbadge {
+  margin-left: auto;
+  font-size: 8.5px;
+  letter-spacing: 0.6px;
+  color: var(--ok);
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  border-radius: 4px;
+  padding: 1.5px 5px;
+  white-space: nowrap;
+}
+
+.obadge {
+  margin-left: auto;
+  font-size: 8.5px;
+  letter-spacing: 0.6px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1.5px 5px;
+  white-space: nowrap;
+}
+
+/* Attested-tier VERIFIED badge (docs/DESIGN-seat-verification-tiers.md) —
+   amber, distinct at a glance from .vbadge's green full-tier VERIFIED. */
+.abadge {
+  margin-left: auto;
+  font-size: 8.5px;
+  letter-spacing: 0.6px;
+  color: var(--warn);
+  border: 1px solid rgba(210, 153, 34, 0.4);
+  border-radius: 4px;
+  padding: 1.5px 5px;
+  white-space: nowrap;
+}
+
+/* TEMP-agent "on duty" badge (2026-08-02, Agents\temp\ presence surface) —
+   cyan/blue-violet, distinct at a glance from .vbadge (green, VERIFIED),
+   .abadge (amber, ATTESTED), and .obadge (grey, OFFLINE/other) so a temp
+   worker can never be mistaken for a seat status. */
+.tbadge {
+  margin-left: auto;
+  font-size: 8.5px;
+  letter-spacing: 0.6px;
+  color: var(--temp);
+  border: 1px solid rgba(138, 125, 250, 0.4);
+  border-radius: 4px;
+  padding: 1.5px 5px;
+  white-space: nowrap;
+}
+
+.empty-hint {
+  padding: 12px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.side-input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--txt);
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.side-connect-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  background: var(--accent-green);
+  color: #fff;
+  border-radius: 6px;
+}
+
+/** Seat model picker (docs/DESIGN-router.md #3) — AgentCard / InspectPanel Model row. */
+.model-select {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--txt);
+  border-radius: 6px;
+  font-size: 11.5px;
+  padding: 3px 6px;
+  max-width: 160px;
+}
+
+.model-select:hover {
+  border-color: var(--accent-green);
+}
+
+.side-connect-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Rooms admin (Phase 3 Milestone A) ---------- */
+
+.sect-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sect-add {
+  color: var(--faint);
+  font-size: 14px;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sect-add:hover {
+  background: var(--panel2);
+  color: var(--txt);
+}
+
+.room-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-kebab {
+  display: none;
+  color: var(--faint);
+  font-size: 13px;
+  padding: 0 3px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.room:hover .room-kebab {
+  display: block;
+}
+
+.room-kebab:hover {
+  background: var(--panel);
+  color: var(--txt);
+}
+
+.room-menu {
+  position: absolute;
+  top: 100%;
+  right: 6px;
+  margin-top: 2px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px;
+  min-width: 150px;
+  z-index: 40;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.room-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--dim);
+  padding: 6px 9px;
+  border-radius: 6px;
+}
+
+.room-menu-item:hover {
+  background: var(--panel2);
+  color: var(--txt);
+}
+
+.room-menu-item.danger {
+  color: var(--bad);
+}
+
+.room-menu-item.danger:hover {
+  background: rgba(248, 81, 73, 0.1);
+}
+
+.room-menu-label {
+  font-size: 11.5px;
+  color: var(--faint);
+  padding: 5px 9px 3px;
+}
+
+.room-rename-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel2);
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  color: var(--txt);
+  font-size: 13px;
+  padding: 2px 6px;
+  outline: none;
+}
+
+.room-create {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 0 4px 8px;
+}
+
+.room-create .member-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 2px;
+  font-size: 12.5px;
+  color: var(--dim);
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.room-create .member-row:hover {
+  color: var(--txt);
+}
+
+.room-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.room-create-cancel {
+  font-size: 12px;
+  color: var(--faint);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.room-create-cancel:hover {
+  color: var(--txt);
+  background: var(--panel);
+}
+
+/* ---------- Projects layer (Phase 3 Milestone E, slimmed) ---------- */
+
+/* Uniform "+ Project" / "+ Room" pair (the operator: these used to be visually
+   inconsistent — a text pill next to an icon-only square). Both buttons now
+   share one class, same size, same border treatment, distinct only by their
+   (already-clear) text label. Replaces the old asymmetric
+   .sect-add/.sect-add-project pairing for this specific row; .sect-add
+   itself is untouched and still used for the icon-only ARCHIVED
+   expand/collapse toggle below. */
+.sect-add-group {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sect-add-btn {
+  color: var(--faint);
+  font-size: 10.5px;
+  letter-spacing: 0.3px;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.sect-add-btn:hover {
+  background: var(--panel2);
+  color: var(--txt);
+  border-color: var(--dim);
+}
+
+.project-group-header {
+  cursor: default;
+}
+
+.project-collapse-caret {
+  color: var(--faint);
+  font-size: 9px;
+  display: inline-block;
+  width: 10px;
+}
+
+.project-kebab {
+  display: none;
+  color: var(--faint);
+  font-size: 13px;
+  padding: 0 3px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.project-group-header:hover .project-kebab {
+  display: block;
+}
+
+.project-kebab:hover {
+  background: var(--panel2);
+  color: var(--txt);
+}
+
+.archived-room {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.archived-room:hover {
+  background: none;
+}
+
+.unarchive-btn {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--accent-green);
+  border: 1px solid rgba(30, 122, 87, 0.45);
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.unarchive-btn:hover {
+  background: rgba(30, 122, 87, 0.18);
+  color: var(--txt);
+}
+
+.chathead-members {
+  margin-left: auto;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.member-chip {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+}
+
+.error-toast {
+  position: fixed;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--bad);
+  background: rgba(248, 81, 73, 0.12);
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  border-radius: 9px;
+  padding: 9px 14px;
+  max-width: 520px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.error-toast-x {
+  color: var(--faint);
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.error-toast-x:hover {
+  color: var(--txt);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Chat ---------- */
+
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.chathead {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.chathead .t {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.chathead .s {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.msgs-wrap {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  position: relative;
+}
+
+.msgs {
+  flex: 1;
+  padding: 20px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+/* Floating "return to bottom" pill (chat-view request): appears once the
+   user scrolls >300px away from the latest message. Solid background, 1px
+   border, no transparency — matches .approvals-nav-btn conventions. */
+.jump-to-latest-btn {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--txt);
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.jump-to-latest-btn:hover {
+  background: var(--panel);
+}
+
+.turn-cap-banner {
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(210, 153, 34, 0.45);
+  background: rgba(210, 153, 34, 0.12);
+  color: var(--warn);
+  font-size: 13px;
+}
+
+.msg {
+  display: flex;
+  gap: 14px;
+  max-width: 1050px;
+  position: relative;
+}
+
+.msg .body {
+  flex: 1;
+  min-width: 0;
+}
+
+.msg .hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 3px;
+  position: relative;
+}
+
+.msg .name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.msg .harness {
+  font-size: 10px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.msg .time {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.edited-tag {
+  font-style: italic;
+}
+
+.msg-actions {
+  margin-left: auto;
+  display: none;
+  gap: 4px;
+}
+
+.msg:hover .msg-actions {
+  display: flex;
+}
+
+.msg-action-btn {
+  font-size: 12px;
+  color: var(--faint);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.msg-action-btn:hover {
+  background: var(--panel2);
+  color: var(--txt);
+}
+
+.md-body p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #d5dae0;
+  margin: 4px 0;
+}
+
+.md-body p b,
+.md-body p strong {
+  color: var(--txt);
+}
+
+.md-body ul,
+.md-body ol {
+  margin: 6px 0 6px 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #d5dae0;
+}
+
+.md-body a {
+  color: var(--accent-gold);
+}
+
+.md-body table {
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.md-body th,
+.md-body td {
+  border: 1px solid var(--line);
+  padding: 4px 9px;
+}
+
+.md-body blockquote {
+  border-left: 3px solid var(--accent-green);
+  padding-left: 10px;
+  color: var(--dim);
+  margin: 6px 0;
+}
+
+.mention-tag {
+  color: var(--accent-gold);
+  background: rgba(201, 163, 92, 0.12);
+  border-radius: 4px;
+  padding: 0 3px;
+  font-weight: 600;
+}
+
+.md-code {
+  background: #0d1117;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 15px 12px;
+  font-family: Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  margin: 8px 0;
+  color: #c9d1d9;
+  overflow-x: auto;
+  position: relative;
+}
+
+.md-code-lang {
+  font-size: 10px;
+  color: var(--faint);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.md-body code:not(.hljs) {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: Consolas, monospace;
+  font-size: 12.5px;
+}
+
+.toolchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--accent-gold);
+  background: rgba(201, 163, 92, 0.08);
+  border: 1px solid rgba(201, 163, 92, 0.28);
+  border-radius: 7px;
+  padding: 4px 11px;
+  margin: 7px 0;
+}
+
+.reacts {
+  display: flex;
+  gap: 7px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.react {
+  font-size: 12.5px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 3px 10px;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.react:hover {
+  border-color: rgba(30, 122, 87, 0.4);
+}
+
+.react.me {
+  border-color: rgba(30, 122, 87, 0.6);
+  background: rgba(30, 122, 87, 0.15);
+  color: var(--txt);
+}
+
+.verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--warn);
+  border: 1px solid rgba(210, 153, 34, 0.35);
+  border-radius: 4px;
+  padding: 1.5px 7px;
+  margin-left: 2px;
+}
+
+/* ---------- Attachments ---------- */
+
+.attach {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 15px;
+  margin-top: 8px;
+  width: 340px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.attach .ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(30, 122, 87, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.attach .fn {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.attach .fs {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.attach-image-link {
+  display: block;
+  margin-top: 8px;
+}
+
+.attach-image {
+  max-width: 340px;
+  max-height: 260px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  display: block;
+}
+
+.pending-attachments {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 26px;
+  margin-bottom: 8px;
+}
+
+.pending-attach {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.pending-attach-info .fn {
+  font-weight: 600;
+}
+
+.pending-attach-info .fs {
+  color: var(--faint);
+  font-size: 10.5px;
+}
+
+.pending-attach-remove {
+  color: var(--faint);
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+.pending-attach-remove:hover {
+  color: var(--bad);
+}
+
+/* ---------- Typing ---------- */
+
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--faint);
+  padding: 0 26px 8px;
+  flex-shrink: 0;
+}
+
+.typing .dots {
+  color: var(--accent-gold);
+}
+
+/* ---------- Composer ---------- */
+
+.composer-wrap {
+  margin: 0 26px 20px;
+  flex-shrink: 0;
+}
+
+/* Composer auto-grow + manual resize (docs/TECH-DEBT.md Wave 7 queue,
+   : thin drag strip along the composer's TOP edge — the
+   composer is bottom-anchored, so this is the edge that has to move for a
+   resize to feel right (see lib/composerSize.ts's doc comment for why a
+   bottom-right handle would be wrong here).
+   Discoverability fix (Wave 8, the operator: "I couldn't find it") — three
+   changes from the original 8px-strip-with-hover-only-pill version: (1) the
+   grip is visible by DEFAULT now (var(--dim), not the near-invisible
+   var(--line)), rendered as a dotted grip pattern rather than a plain bar
+   so it reads as "draggable" at a glance; (2) ::before extends the actual
+   hoverable/grabbable area a further 6px above and below the visible strip
+   — pure hit-target slop via absolute positioning, doesn't touch layout
+   height/spacing; (3) hover/active brightens to the gold accent, not just
+   a slightly-less-dim grey, so the affordance is unmistakable once found. */
+.composer-resize-handle {
+  height: 8px;
+  margin: 0 16px;
+  cursor: ns-resize;
+  position: relative;
+  touch-action: none;
+}
+
+.composer-resize-handle::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  bottom: -6px;
+}
+
+.composer-resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg, var(--dim) 0 4px, transparent 4px 8px);
+}
+
+.composer-resize-handle:hover::after,
+.composer-resize-handle:active::after {
+  width: 56px;
+  background: repeating-linear-gradient(90deg, var(--accent-gold) 0 4px, transparent 4px 8px);
+}
+
+.composer {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px 8px;
+  gap: 4px;
+}
+
+.cbtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: var(--dim);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.cbtn:hover {
+  background: var(--panel);
+}
+
+.cbtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cbtn:disabled:hover {
+  background: none;
+}
+
+/* Voice v1 dictation (docs/DESIGN-voice-v1.md) — mic button while actively listening. */
+.cbtn.mic-active {
+  color: var(--bad);
+  background: rgba(248, 81, 73, 0.15);
+}
+
+.mic-denied-hint {
+  font-size: 11.5px;
+  color: var(--faint);
+  padding: 4px 2px 6px;
+}
+
+.cinput {
+  flex: 1;
+  font-size: 14px;
+  color: var(--txt);
+  padding: 8px 6px;
+  background: none;
+  border: none;
+  resize: none;
+  outline: none;
+}
+
+.cinput-textarea {
+  width: 100%;
+  /* Height itself is driven by inline style from lib/composerSize.ts's
+     auto-grow/manual-resize math (Composer.tsx) — this max-height is a CSS-
+     only safety cap matching COMPOSER_MAX_MANUAL_HEIGHT_PX so the box still
+     can't run away even if that JS somehow fails to apply. overflow-y
+     handles both the "beyond ~4 lines" auto-grow case and any manual size
+     smaller than the content. */
+  max-height: 480px;
+  overflow-y: auto;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.cinput::placeholder {
+  color: var(--faint);
+}
+
+.send {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--accent-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.composer-preview {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.composer-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.edit-box {
+  background: var(--panel2);
+  border: 1px solid var(--accent-green);
+  border-radius: 9px;
+  padding: 8px;
+  margin-top: 4px;
+}
+
+.edit-textarea {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--txt);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  min-height: 40px;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* ---------- Emoji picker ---------- */
+
+.emoji-picker {
+  position: absolute;
+  bottom: 46px;
+  right: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  z-index: 30;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.emoji-picker-item {
+  font-size: 18px;
+  padding: 5px;
+  border-radius: 6px;
+}
+
+.emoji-picker-item:hover {
+  background: var(--panel2);
+}
+
+/* ---------- Mentions ---------- */
+
+.mention-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px;
+  min-width: 220px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 30;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mention-item.active,
+.mention-item:hover {
+  background: rgba(30, 122, 87, 0.18);
+}
+
+.mention-av {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.mention-name {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+/* ---------- Inspect panel ---------- */
+
+.inspect-panel {
+  width: 340px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.inspect-header {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.inspect-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.inspect-clear-agent {
+  margin: 8px 16px 0;
+  align-self: flex-start;
+  font-size: 11px;
+  color: var(--accent-gold);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.inspect-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 16px 0;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.inspect-tab {
+  font-size: 12px;
+  color: var(--faint);
+  padding: 6px 10px;
+  border-bottom: 2px solid transparent;
+}
+
+.inspect-tab.active {
+  color: var(--txt);
+  border-bottom-color: var(--accent-green);
+}
+
+.inspect-agent-summary {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.inspect-agent-summary .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.inspect-agent-summary .k {
+  color: var(--faint);
+}
+
+.inspect-frames {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inspect-telemetry {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspect-telemetry .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.inspect-telemetry .k {
+  color: var(--faint);
+}
+
+.inspect-telemetry-turns-hdr {
+  margin-top: 10px;
+  font-size: 10.5px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.inspect-telemetry-turn {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--dim);
+  border-bottom: 1px solid var(--line);
+  padding: 4px 0;
+}
+
+/* Agent Dossiers tab (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-surface.md). */
+.inspect-dossier {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.dossier-meta {
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-bottom: 10px;
+}
+
+.dossier-body {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.frame {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+}
+
+.frame-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.frame-dir {
+  font-size: 10px;
+}
+
+.frame-dir.in {
+  color: var(--ok);
+}
+
+.frame-dir.out {
+  color: var(--accent-gold);
+}
+
+.frame-type {
+  font-weight: 600;
+  color: var(--txt);
+}
+
+.frame-time {
+  margin-left: auto;
+  color: var(--faint);
+}
+
+.frame-raw {
+  margin-top: 6px;
+  font-family: Consolas, monospace;
+  font-size: 10.5px;
+  color: var(--dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ---------- Files rail ---------- */
+
+.files-rail {
+  width: 340px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.files-rail-upload {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.files-rail-error {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--bad);
+}
+
+.files-rail-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.files-rail-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.files-rail-row .ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(30, 122, 87, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.files-rail-meta {
+  min-width: 0;
+}
+
+.files-rail-meta .fn {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-rail-meta .fs {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ---------- Classic dashboard agent cards ---------- */
+
+.agent-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+}
+
+.chead {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 14px;
+}
+
+.cav {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.cname {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.chns {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 4px 10px;
+  border: 1px solid;
+}
+
+.sdot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+}
+
+.row .k {
+  color: var(--faint);
+}
+
+.row .v {
+  color: var(--dim);
+}
+
+.row .v b {
+  color: var(--txt);
+  font-weight: 600;
+}
+
+.pol {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  margin-bottom: 15px;
+}
+
+.pol-t {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--faint);
+}
+
+.diag {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--bad);
+  background: rgba(248, 81, 73, 0.06);
+  border: 1px solid rgba(248, 81, 73, 0.25);
+  border-radius: 8px;
+  padding: 9px 11px;
+  margin-bottom: 15px;
+}
+
+.btn {
+  display: block;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.6px;
+  border-radius: 9px;
+  padding: 10px;
+  border: 1px solid var(--accent-green);
+  color: #fff;
+  background: rgba(30, 122, 87, 0.25);
+  cursor: pointer;
+}
+
+/* Crash card for PanelBoundary — visible failure, never a blank page. */
+.panel-crash { padding: 18px; margin: 12px; background: #1a1f1d; border: 1px solid #e0604e; border-radius: 10px; font-size: 14px; max-width: 420px; align-self: flex-start; }
+.panel-crash b { color: #f09384; display: block; margin-bottom: 6px; }
+.panel-crash-msg { color: #9aa39e; font-family: Consolas, monospace; font-size: 12px; margin-bottom: 10px; word-break: break-word; }
+
+/* ---------- Memory rail (docs/DESIGN-memory-read.md) ---------- */
+
+.memory-rail {
+  width: 340px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.memory-search {
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+
+.memory-search-input {
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+.memory-section-hdr {
+  padding: 10px 16px 4px;
+  font-size: 10.5px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.memory-pinned-section {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+
+.memory-pinned-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px;
+}
+
+.memory-pinned-row .memory-result-link {
+  flex: 1;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--txt);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memory-unpin-x {
+  color: var(--faint);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.memory-unpin-x:hover {
+  color: var(--bad);
+}
+
+.memory-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.memory-result-row {
+  text-align: left;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.memory-result-row:hover {
+  border-color: var(--accent-gold);
+}
+
+.memory-result-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt);
+}
+
+.memory-result-summary {
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.memory-result-meta {
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.memory-note-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+
+.memory-note-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.memory-back {
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.memory-back:hover {
+  color: var(--txt);
+}
+
+.memory-pin-btn {
+  font-size: 11.5px;
+  color: var(--accent-gold);
+  border: 1px solid rgba(201, 163, 92, 0.35);
+  border-radius: 7px;
+  padding: 5px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.memory-pin-btn.pinned {
+  color: var(--ok);
+  border-color: rgba(63, 185, 80, 0.35);
+}
+
+.memory-note-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--txt);
+  margin-bottom: 2px;
+}
+
+.memory-note-path {
+  font-size: 10.5px;
+  color: var(--faint);
+  font-family: Consolas, monospace;
+  margin-bottom: 10px;
+  word-break: break-all;
+}
+
+.memory-note-body {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+/* Pinned-note chips in the room header (docs/DESIGN-memory-read.md). Capped
+   width + internal scroll so a room with several pins can't push the rest of
+   the (non-wrapping, fixed-height) topbar off screen. */
+.pinned-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  overflow-x: auto;
+  flex-shrink: 1;
+}
+
+.pinned-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--accent-gold);
+  background: rgba(201, 163, 92, 0.08);
+  border: 1px solid rgba(201, 163, 92, 0.28);
+  border-radius: 20px;
+  padding: 4px 6px 4px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pinned-chip-title {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinned-chip-x {
+  color: var(--faint);
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px;
+}
+
+.pinned-chip-x:hover {
+  color: var(--bad);
+}
+
+/* Members editor variant of the room menu — wide enough for member rows. */
+.room-menu.wide {
+  min-width: 200px;
+  padding-bottom: 4px;
+}
+
+.room-menu .member-row {
+  padding: 4px 9px;
+}
+
+/* Loop-lite panel (Wave 2) — lives inside the .room-menu.wide container. */
+.loop-field-label {
+  display: block;
+  color: var(--faint);
+  font-size: 11px;
+  padding: 0 9px;
+  margin-top: 4px;
+}
+
+.loop-seat-select {
+  margin: 2px 9px 0;
+  width: calc(100% - 18px);
+}
+
+.loop-status-line {
+  font-size: 11.5px;
+  color: var(--dim);
+  padding: 0 9px 6px;
+}
+
+.loop-warn {
+  font-size: 11px;
+  color: var(--warn);
+  padding: 4px 9px 0;
+}
+
+/* ---------- Polls rail (docs/DESIGN-approvals-rail.md) ---------- */
+
+.pill-badge {
+  background: var(--accent-gold);
+  color: #0b0d10;
+  border-radius: 9px;
+  font-size: 10px;
+  padding: 1px 6px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.polls-rail {
+  width: 360px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.polls-rail-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.polls-history {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.polls-history-toggle {
+  font-size: 11.5px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 0 4px;
+}
+
+/* Poll card — shared by the rail (cross-room) and the in-room inline mount
+   above the composer (see ChatView's .inline-polls). */
+
+.inline-polls {
+  padding: 0 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.poll-card {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poll-card.open {
+  border-color: rgba(201, 163, 92, 0.35);
+}
+
+.poll-card.decided {
+  opacity: 0.85;
+}
+
+.poll-card.expired {
+  opacity: 0.65;
+}
+
+.poll-card.withdrawn {
+  opacity: 0.55;
+}
+
+.poll-card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.poll-badge {
+  font-size: 9.5px;
+  letter-spacing: 0.4px;
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.poll-badge-paperclip {
+  color: var(--accent-gold);
+  border: 1px solid rgba(201, 163, 92, 0.4);
+}
+
+.poll-badge-local {
+  color: var(--faint);
+  border: 1px solid var(--line);
+}
+
+.poll-badge-room {
+  color: var(--dim);
+  border: 1px solid var(--line);
+  background: transparent;
+  font-weight: 500;
+}
+
+.poll-requester {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.poll-badge-critical {
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.poll-opened-date {
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-left: auto;
+}
+
+.poll-expiry {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--warn);
+  white-space: nowrap;
+}
+
+.poll-dismiss {
+  font-size: 12px;
+  color: var(--faint);
+  padding: 0 2px;
+}
+
+.poll-dismiss:hover {
+  color: var(--txt);
+}
+
+.poll-question {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.poll-detail {
+  font-size: 12.5px;
+  color: var(--dim);
+  line-height: 1.4;
+}
+
+.poll-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.poll-option {
+  font-size: 12.5px;
+  color: var(--txt);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.poll-option:hover:not(:disabled) {
+  border-color: var(--accent-gold);
+}
+
+.poll-option:disabled {
+  opacity: 0.6;
+}
+
+.poll-option.recommended {
+  border-color: rgba(63, 185, 80, 0.5);
+  background: rgba(63, 185, 80, 0.1);
+}
+
+.poll-rec-label {
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ok);
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.poll-note-input {
+  font-size: 12px;
+  padding: 7px 9px;
+}
+
+.poll-outcome {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12.5px;
+}
+
+.poll-outcome-picked {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.poll-outcome-auto {
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.poll-outcome-meta {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.poll-outcome-note {
+  color: var(--dim);
+  font-style: italic;
+  font-size: 11.5px;
+}
+
+.poll-outcome-withdrawn {
+  color: var(--faint);
+  font-weight: 600;
+}
+
+/* Studio Dock (docs/DESIGN-studio-dock.md) — sidebar section + main-pane mount + Memory Galaxy. */
+
+.studio-dock {
+  border-top: 1px solid var(--line);
+  padding: 8px 0 4px;
+}
+
+.studio-dock-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 14px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--txt);
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+
+.studio-dock-entry:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.studio-dock-entry.active {
+  background: rgba(201, 163, 92, 0.12);
+  border-left-color: var(--accent-gold);
+}
+
+.studio-dock-entry.disabled {
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
+.studio-dock-icon {
+  width: 18px;
+  text-align: center;
+}
+
+.dock-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dock-view-unknown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.dock-view-iframe-hdr {
+  height: 54px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dock-view-iframe-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dock-view-iframe-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
+
+.memory-galaxy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.memory-galaxy-hdr {
+  height: 54px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.memory-galaxy-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.memory-galaxy-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.memory-galaxy-chip {
+  font-size: 11px;
+  color: var(--dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.memory-galaxy-chip-cap {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.memory-galaxy-canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #10141b 0%, var(--bg) 70%);
+}
+
+.memory-galaxy-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.memory-galaxy-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--txt);
+  max-width: 260px;
+  z-index: 2;
+}
+
+.memory-galaxy-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memory-galaxy-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Approvals Inbox (docs/DESIGN-approvals-app-v2.md) — Studio Dock route app.
+   .studio-dock/.studio-dock-entry/.studio-dock-icon are already styled above
+   (Wave 5, registry-driven) — nothing new needed there for this entry. */
+
+.approvals-inbox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.approvals-inbox-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 26px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.approvals-inbox-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.approvals-inbox-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.approvals-inbox-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.approvals-inbox-count {
+  font-size: 12px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.approvals-inbox-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 26px;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.approvals-inbox-pos-hint {
+  color: var(--faint);
+}
+
+/* Nav buttons (queue prev/next, header "← Rooms") — deliberately NOT .cbtn:
+   that class is a 38px-square transparent composer icon button and clips/
+   fades multi-word labels like "← Older in queue". Solid, auto-width. */
+.approvals-nav-btn {
+  height: 36px;
+  padding: 0 14px;
+  width: auto;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--txt);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.approvals-nav-btn:hover:not(:disabled) {
+  background: var(--panel);
+}
+
+.approvals-nav-btn:disabled {
+  background: var(--panel2);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.approvals-inbox-card {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 26px 32px;
+  max-width: 920px;
+}
+
+.approvals-inbox-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* Poll card — inbox variant additions (rail/in-room variant above is unchanged). */
+
+.poll-card-inbox {
+  gap: 14px;
+}
+
+.poll-rich-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poll-rich-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poll-rich-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.poll-rich-label {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.poll-rich-body {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--txt);
+}
+
+.poll-rich-rec .poll-rich-body {
+  color: var(--accent-gold);
+}
+
+.poll-att-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.poll-att {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+}
+
+.poll-att-kind {
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.poll-att-img {
+  max-width: 100%;
+  border-radius: 6px;
+  display: block;
+  margin-top: 6px;
+}
+
+.poll-att-pre {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.poll-att-pre.clamped {
+  max-height: 120px;
+  overflow: hidden;
+}
+
+.poll-att-pre.expanded {
+  max-height: none;
+}
+
+.poll-att-expand {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--accent-gold);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.poll-att-expand:hover {
+  text-decoration: underline;
+}
+
+.poll-att-caption {
+  margin-top: 6px;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.poll-att-source {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.poll-att-link {
+  font-size: 12px;
+  color: var(--accent-gold);
+}
+
+.poll-att-missing {
+  font-size: 11px;
+  color: var(--faint);
+  font-style: italic;
+}
+
+.poll-dispute-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .poll-dispute-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.poll-dispute-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.poll-dispute-agent {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--accent-gold);
+}
+
+.poll-dispute-statement {
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.poll-inbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.poll-action {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  background: var(--panel);
+  color: var(--txt);
+}
+
+.poll-action:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.poll-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.poll-action-approve {
+  background: rgba(22, 163, 74, 0.2);
+  border-color: rgba(22, 163, 74, 0.45);
+  color: #4ade80;
+}
+
+.poll-action-reject {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #f87171;
+}
+
+.poll-action-defer {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--dim);
+}
+
+.poll-action-info {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.35);
+  color: #facc15;
+}
+
+.poll-action-withdraw {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.25);
+  color: var(--faint);
+}
+
+.poll-action-error {
+  font-size: 11px;
+  color: #f87171;
+}
+
+.poll-deferral-log {
+  font-size: 11px;
+  color: var(--faint);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---------- Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md) ---------- */
+
+.poll-review-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--warn);
+  background: rgba(210, 153, 34, 0.1);
+  border: 1px solid rgba(210, 153, 34, 0.35);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.poll-review-confirm-yes {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--txt);
+  background: rgba(210, 153, 34, 0.25);
+  border: 1px solid rgba(210, 153, 34, 0.5);
+  border-radius: 6px;
+  padding: 4px 9px;
+}
+
+.poll-review-confirm-yes:hover {
+  filter: brightness(1.15);
+}
+
+.poll-review-confirm-cancel {
+  font-size: 11.5px;
+  color: var(--faint);
+  padding: 4px 6px;
+}
+
+.poll-review-confirm-cancel:hover {
+  color: var(--txt);
+}
+
+/* ---------- Poll withdraw ("remove decision" button, owner-directed, ) ---------- */
+
+.poll-withdraw-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #f87171;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.poll-withdraw-confirm .poll-note-input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.poll-withdraw-confirm-yes {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--txt);
+  background: rgba(220, 38, 38, 0.25);
+  border: 1px solid rgba(220, 38, 38, 0.5);
+  border-radius: 6px;
+  padding: 4px 9px;
+}
+
+.poll-withdraw-confirm-yes:hover {
+  filter: brightness(1.15);
+}
+
+.poll-withdraw-confirm-cancel {
+  font-size: 11.5px;
+  color: var(--faint);
+  padding: 4px 6px;
+}
+
+.poll-withdraw-confirm-cancel:hover {
+  color: var(--txt);
+}
+
+.review-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-chip {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--panel);
+}
+
+.review-chip-hdr {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.review-chip-icon {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+}
+
+.review-chip-seat {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--txt);
+}
+
+.review-chip-label {
+  font-size: 11px;
+  color: var(--dim);
+  text-transform: capitalize;
+}
+
+.review-chip-sub-badge {
+  font-size: 9px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: auto;
+}
+
+/* Verdict color coding — 'unparseable' is deliberately gray/striped and
+   NEVER shares a color with 'approve' (design doc F/B3: never coerced to
+   approve, and must be visually distinct at a glance). */
+.review-chip-approve {
+  border-color: rgba(63, 185, 80, 0.4);
+}
+.review-chip-approve .review-chip-icon {
+  color: var(--ok);
+}
+
+.review-chip-concerns {
+  border-color: rgba(210, 153, 34, 0.4);
+}
+.review-chip-concerns .review-chip-icon {
+  color: var(--warn);
+}
+
+.review-chip-reject {
+  border-color: rgba(248, 81, 73, 0.4);
+}
+.review-chip-reject .review-chip-icon {
+  color: var(--bad);
+}
+
+.review-chip-pending {
+  border-style: dashed;
+  opacity: 0.75;
+}
+.review-chip-pending .review-chip-icon {
+  color: var(--faint);
+}
+
+.review-chip-timed-out {
+  opacity: 0.6;
+}
+.review-chip-timed-out .review-chip-icon {
+  color: var(--faint);
+}
+
+.review-chip-unparseable {
+  border-style: dashed;
+  border-color: var(--faint);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--panel),
+    var(--panel) 6px,
+    var(--panel2) 6px,
+    var(--panel2) 12px
+  );
+}
+.review-chip-unparseable .review-chip-icon {
+  color: var(--dim);
+}
+
+.review-chip-raw {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.review-chip-raw-toggle {
+  align-self: flex-start;
+  font-size: 10.5px;
+  color: var(--faint);
+  text-decoration: underline;
+}
+
+.review-chip-raw-toggle:hover {
+  color: var(--txt);
+}
+
+.review-chip-raw-text {
+  font-size: 11px;
+  color: var(--dim);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  white-space: pre-wrap;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.review-findings {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+
+.review-finding {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--dim);
+}
+
+.review-finding-text {
+  flex: 1;
+}
+
+.review-finding-toggle {
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+
+.review-finding-valid .review-finding-toggle {
+  color: var(--ok);
+  border-color: rgba(63, 185, 80, 0.4);
+}
+
+.review-finding-invalid .review-finding-toggle {
+  color: var(--bad);
+  border-color: rgba(248, 81, 73, 0.4);
+}
+
+/* ---------- review_policy toggle (Approvals Inbox header) ---------- */
+
+.review-policy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.review-policy-toggle-label {
+  color: var(--faint);
+}
+
+.review-policy-toggle-buttons {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.review-policy-toggle-btn {
+  font-size: 11px;
+  padding: 5px 9px;
+  color: var(--dim);
+  background: var(--panel);
+  border: none;
+  border-right: 1px solid var(--line);
+}
+
+.review-policy-toggle-btn:last-child {
+  border-right: none;
+}
+
+.review-policy-toggle-btn.active {
+  color: var(--txt);
+  background: rgba(201, 163, 92, 0.18);
+  font-weight: 600;
+}
+
+.review-policy-toggle-btn:disabled {
+  opacity: 0.6;
+}
+
+.review-policy-toggle-error {
+  color: var(--bad);
+  font-size: 10.5px;
+}
+
+/* ---------- Add agent panel ---------- */
+
+.add-agent,
+.add-agent-form {
+  margin: 0 8px 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel2);
+  font-size: 12px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.preset-tile {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--txt);
+  font-size: 12.5px;
+  text-align: left;
+  min-width: 0;
+}
+
+.preset-tile:hover {
+  border-color: var(--dim);
+}
+
+.preset-tile .av,
+.add-agent-title .av {
+  flex-shrink: 0;
+}
+
+.preset-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-agent-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.add-agent-back,
+.link-btn {
+  color: var(--faint);
+  font-size: 11.5px;
+  text-decoration: none;
+  background: none;
+  padding: 0;
+}
+
+.link-btn {
+  color: var(--txt);
+  text-decoration: underline;
+}
+
+.add-agent-back:hover {
+  color: var(--txt);
+}
+
+.add-agent-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0 6px;
+}
+
+.add-agent-blurb,
+.add-agent-help {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.add-agent-help {
+  margin: -5px 0 8px;
+}
+
+.add-agent-setup {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.add-agent-setup code {
+  font-size: 11px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--panel);
+  word-break: break-all;
+}
+
+.quick-fills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.add-agent-label {
+  display: block;
+  color: var(--faint);
+}
+
+.add-agent-label .side-input {
+  margin-top: 3px;
+}
+
+.add-agent-remember {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  color: var(--dim);
+  margin: 2px 0 8px;
+}
+
+.add-agent-status,
+.add-agent-error {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--dim);
+}
+
+.add-agent-error {
+  color: var(--bad);
+}
+
+.add-agent-ok {
+  color: var(--ok);
+}
+
+.agent-remove {
+  opacity: 0;
+  color: var(--faint);
+  font-size: 11px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: none;
+  flex-shrink: 0;
+}
+
+.agent:hover .agent-remove,
+.agent-remove:focus-visible {
+  opacity: 1;
+}
+
+.agent-remove:hover {
+  color: var(--bad);
+  background: var(--panel);
+}
+
+.agent-remove-confirm {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.agent-remove-yes,
+.agent-remove-no {
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--txt);
+}
+
+.agent-remove-yes {
+  color: var(--bad);
+  border-color: var(--bad);
+}

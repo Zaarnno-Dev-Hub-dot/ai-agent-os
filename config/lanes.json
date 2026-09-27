@@ -1,0 +1,4 @@
+{
+  "_comment": "Optional review lanes: pair a builder seat with a first reviewer, e.g. { \"builder\": \"claude-code\", \"reviewer\": \"codex\" }. Policy reviewers are always drawn from outside the pair. Empty by default.",
+  "lanes": []
+}

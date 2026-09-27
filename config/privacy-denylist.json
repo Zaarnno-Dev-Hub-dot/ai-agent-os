@@ -1,0 +1,11 @@
+{
+  "_comment": "Memory-vault privacy filter. Any vault note whose path (or body, for bare terms) matches is never indexed or shown to agents. The index is FAIL-CLOSED: if this file is missing or 'terms' is empty, nothing is indexed. Replace the placeholder with your own private names/projects.",
+  "terms": [
+    "example-private-term"
+  ],
+  "wordBoundaryTerms": [],
+  "pathPrefixes": [
+    "private/",
+    "journal/"
+  ]
+}

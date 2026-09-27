@@ -1,0 +1,38 @@
+{
+  "name": "ai-agent-os",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "packages/adapters/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:ui\"",
+    "dev:gateway": "npm run dev --workspace=packages/gateway",
+    "dev:ui": "npm run dev --workspace=packages/ui",
+    "build": "npm run build --workspaces",
+    "build:gateway": "npm run build --workspace=packages/gateway",
+    "build:ui": "npm run build --workspace=packages/ui",
+    "verify": "npm run verify --workspaces",
+    "gate": "tsx scripts/gate-live.mts",
+    "verify:types": "tsc --noEmit --project packages/shared/tsconfig.json && tsc --noEmit --project packages/gateway/tsconfig.json && tsc --noEmit --project packages/ui/tsconfig.json && tsc --noEmit --project packages/paperclip-adapter/tsconfig.json",
+    "lint": "eslint packages --ext .ts,.tsx",
+    "test": "npm run test --workspaces --if-present",
+    "start": "node packages/gateway/dist/index.js",
+    "clean": "rimraf packages/*/dist packages/*/node_modules node_modules"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "npm@10.8.0"
+}
