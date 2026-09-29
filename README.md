@@ -145,6 +145,7 @@ machine. Do not expose it to a network without adding authentication.
 ## Verify
 
 ```bash
+npm run lint        # eslint
 npm run verify      # type-check every workspace
 npm test            # full test suite (vitest, retries a failed test up to twice)
 ```
@@ -157,10 +158,7 @@ GitHub's private vulnerability reporting to report problems.
 
 ## Known gaps
 
-- One timing-sensitive test in `bridge.test.ts` can time out when the whole suite runs in parallel on a slow
-  machine; it passes on its own, and `npm test` retries a failed test twice.
-- `npm run lint` currently reports a few dozen errors (mostly `no-explicit-any`), so it is not part of CI yet.
-- Developed mostly on Windows. macOS/Linux should work but are less tested.
+- Developed mostly on Windows. CI builds and tests on Linux; macOS has not been tried.
 - Some code comments still use project-history labels (such as "Wave 7") from the private repo this was exported from.
 
 ## License
