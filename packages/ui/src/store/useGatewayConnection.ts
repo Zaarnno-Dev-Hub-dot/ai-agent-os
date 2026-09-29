@@ -13,10 +13,10 @@ const SERVER_EVENT_PREFIXES = [
   'budget.',
   'proof.',
   'kanban.',
-  // router.routed (docs/DESIGN-router.md #4) — server->client routing-decision
+  // router.routed — server->client routing-decision
   // broadcast; without this prefix it is silently dropped by the filter above.
   'router.',
-  // Vault memory layer v1 (docs/DESIGN-memory-read.md): memory.results / memory.note.
+  // Vault memory layer v1: memory.results / memory.note.
   'memory.',
 ];
 

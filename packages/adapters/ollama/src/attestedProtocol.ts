@@ -1,6 +1,5 @@
 /**
- * Attested-tier challenge wire shapes (docs/DESIGN-seat-verification-tiers.md
- * §2 "Design: two named tiers"). packages/shared's `Challenge`/
+ * Attested-tier challenge wire shapes. packages/shared's `Challenge`/
  * `ChallengeResponse` unions are FROZEN and closed to exactly
  * `identity-echo | nonce-file | capability-probe` — full-tier challenges that
  * assume tool possession this tool-less endpoint can never have.
@@ -14,8 +13,7 @@
  * runNonceFile, which ignores the adapter's own `success` flag and compares
  * `response.data.nonce` itself). Same endpoint-typed-cast idiom already used
  * for room.rollover / state.sync additive fields elsewhere in this repo
- * (docs/TECH-DEBT.md "room.rollover is typed at the endpoints, not in
- * shared") — packages/shared stays untouched.
+ * — packages/shared stays untouched.
  */
 
 export interface AttestedNonceChallenge {
@@ -27,8 +25,7 @@ export interface AttestedNonceChallenge {
    * Sent IN the prompt, on purpose. This is NOT the same security posture as
    * the frozen nonce-file challenge — this tier's threat model is "is a live
    * model behind the endpoint answering THIS challenge", not "can the agent
-   * reach a file only it can read" (design doc: "the in-prompt echo is not a
-   * leak here because possession-of-tools is not what this tier claims").
+   * reach a file only it can read".
    */
   nonce: string;
 }
@@ -116,7 +113,7 @@ export function parseNonceEcho(raw: string, expectedNonce: string): NonceEchoRes
 }
 
 // ----------------------------------------------------------------------------
-// Canned-responder probes: two randomized micro-questions (design doc §2.3).
+// Canned-responder probes: two randomized micro-questions.
 // Regenerated fresh on every verification so a static/mock endpoint that
 // always returns the same canned text cannot pass twice in a row, let alone
 // once against a freshly-randomized expected answer.

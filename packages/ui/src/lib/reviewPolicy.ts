@@ -1,8 +1,7 @@
 import type { PollReview } from '@agent-os/shared';
 
 /**
- * Two-Reviewer Policy client helpers (Wave 7 M3,
- * docs/DESIGN-two-reviewer-policy.md). REST calls to the gateway-local
+ * Two-Reviewer Policy client helpers. REST calls to the gateway-local
  * routes pollReviews.ts registers — same GATEWAY_ORIGIN convention as
  * lib/attachments.ts's uploadFile.
  */
@@ -12,11 +11,10 @@ import { gatewayHttpOrigin } from './gatewayOrigin';
 const GATEWAY_ORIGIN = gatewayHttpOrigin();
 
 /**
- * humanToken (design doc B2): injected ONLY into the served index.html by
+ * humanToken: injected ONLY into the served index.html by
  * the gateway (index.ts's servedIndexHtml) — never fetched from an API
  * route. Undefined in the Vite dev server (which serves its own raw
- * index.html, not the gateway's) — a KNOWN, accepted gap (see
- * BUILDER_PROTOCOL "disclose what is NOT done"): dev-mode poll.decide/
+ * index.html, not the gateway's) — a KNOWN, accepted gap: dev-mode poll.decide/
  * agent.disconnect/policy-toggle will be rejected the same way a stale/
  * offline token would be. The production build (served BY the gateway) is
  * unaffected.
@@ -77,8 +75,7 @@ export async function setReviewPolicyMode(mode: ReviewPolicyMode): Promise<SetRe
 
 /**
  * POST /api/poll-reviews/:reviewId/findings/:idx — the per-finding valid/
- * invalid/unmark 3-state toggle (design doc: "cheap single-user ground
- * truth"), NOT humanToken-gated (loopback trust, same as every other
+ * invalid/unmark 3-state toggle, NOT humanToken-gated (loopback trust, same as every other
  * non-decide poll mutation). The gateway broadcasts `poll.review.updated`
  * on success, which is what actually updates the store — this function's
  * return value is only used to detect failure; callers do not need to

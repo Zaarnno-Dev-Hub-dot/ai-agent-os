@@ -146,7 +146,7 @@ describe('applyServerEvent — message.new (voice-hop throw regression, review 2
 });
 
 // ============================================================================
-// Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md)
+// Two-Reviewer Policy
 // ============================================================================
 
 function baseReview(overrides: Partial<PollReview> = {}): PollReview {

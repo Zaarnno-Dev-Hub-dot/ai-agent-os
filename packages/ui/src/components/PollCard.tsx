@@ -47,13 +47,12 @@ export type PollCardVariant = 'rail' | 'inbox';
 
 /**
  * One decision card, shared by PollsRail (cross-room list), the in-room
- * inline mount above the composer (docs/DESIGN-approvals-rail.md #5), and the
- * Studio Dock `approvals-inbox` route (docs/DESIGN-approvals-app-v2.md).
+ * inline mount above the composer, and the
+ * Studio Dock `approvals-inbox` route.
  * Decided/expired cards render read-only (their outcome) in every variant.
  * Open cards differ by `variant`:
  *   - `'rail'` (default): unchanged from Wave 4 — plain question/detail text,
- *     one button per option (design doc correction #4: v1 polls render
- *     exactly as before when the rich fields are absent).
+ *     one button per option.
  *   - `'inbox'`: WHAT/WHY/RECOMMENDATION + attachments gallery + dispute
  *     columns (PollRichSections.tsx), and a fixed four-button row
  *     (Approve/Reject/Defer/More info) instead of the raw options list.
@@ -95,7 +94,7 @@ export function PollCard({
   const [deciding, setDeciding] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  // Soft speed-bump (design doc "Soft speed-bump"): set to the optionId the
+  // Soft speed-bump: set to the optionId the
   // user just clicked once a zero-verdict decide needs a second, inline
   // click to confirm. Cleared on cancel or once the decide actually sends.
   const [pendingConfirmOptionId, setPendingConfirmOptionId] = useState<string | null>(null);
@@ -135,7 +134,7 @@ export function PollCard({
 
   function decide(optionId: string) {
     if (deciding) return;
-    // Zero-verdict soft-confirm (design doc "Soft speed-bump"): the FIRST
+    // Zero-verdict soft-confirm: the FIRST
     // click on a covered, zero-attached-verdict poll only arms the inline
     // banner below — it does not send anything. Clicking the SAME option
     // again (either the original button, re-labeled by the disabled state

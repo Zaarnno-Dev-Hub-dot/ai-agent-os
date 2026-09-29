@@ -1,7 +1,5 @@
 /**
- * Per-connection WS envelope send + roomError (docs/TECH-DEBT.md "roomError
- * currently BROADCASTS rejection notices to all clients instead of the
- * offender"). Pulled out of index.ts into their own module so this narrow,
+ * Per-connection WS envelope send + roomError. Pulled out of index.ts into their own module so this narrow,
  * easily-regressed targeting behavior — a validation error for client A's
  * request must reach ONLY client A's socket, not every open tab — is unit
  * testable without importing index.ts (which binds the live gateway's port

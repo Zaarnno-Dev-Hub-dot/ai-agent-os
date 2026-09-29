@@ -1,6 +1,5 @@
 /**
- * humanToken — the "only the operator decides" mechanism (Wave 7 M3,
- * docs/DESIGN-two-reviewer-policy.md, blocker B2: "invariant-already-false
+ * humanToken — the "only the operator decides" mechanism ("invariant-already-false
  * (loopback WS decide)"). Today any local non-browser WS client passes the
  * Origin gate (index.ts's ALLOWED_ORIGINS check only rejects a SPOOFED
  * browser origin — no Origin header at all is treated as "not a drive-by
@@ -12,7 +11,7 @@
  * Delivery is index.ts's job (injected into the served index.html only —
  * see servedIndexHtml() there); this module only mints and compares.
  *
- * Honest limits (stated in the design doc, not hidden here): any local
+ * Honest limits: any local
  * process can fetch '/' and read the token out of the HTML. This contains
  * accidents, attested seats, and injected/hijacked tool-less seats that have
  * no HTTP-fetch capability of their own — it is NOT a boundary against

@@ -52,7 +52,7 @@ export function registerAdapter(manifestId: string, registration: AdapterRegistr
 
 /**
  * The STATIC roster of manifest ids this build knows how to adapt for
- * (docs/DESIGN-agent-dossiers-surface.md F10) — every key of the registry
+ * — every key of the registry
  * above, at whatever point the caller reads it. Deliberately NOT the
  * connected/VERIFIED `agents` map: that reflects who happens to be online
  * right now, which would make a down seat's dossier unreadable (F11) and
@@ -66,7 +66,7 @@ export function knownManifestIds(): string[] {
 }
 
 // ============================================================================
-// Multi-instance seats (docs/DESIGN-multi-instance.md)
+// Multi-instance seats
 //
 // One manifest (adapter code, identity patterns, billing) can back multiple
 // SEATS — separate authenticated sessions of the same harness (e.g. two
@@ -210,8 +210,7 @@ export function seatLastReplyAt(state: AgentState): string | undefined {
 }
 
 // ============================================================================
-// Remote-workspace nonce writer (docs/DESIGN-permanent-agents-2026-07-18.md,
-// "hermes#remote seat"): the frozen verifier's nonce-file challenge writes a
+// Remote-workspace nonce writer: the frozen verifier's nonce-file challenge writes a
 // nonce somewhere the AGENT can read it back from, to prove real filesystem
 // access to ITS OWN workspace. Every seat before hermes#remote runs on this
 // laptop, so "the agent's workspace" == a local dir was always the same
@@ -430,8 +429,7 @@ export function createVerifier(
 }
 
 // ============================================================================
-// Verifier transient-retry (docs/TECH-DEBT.md "Verifier single-shot on
-// transient upstream flakes"): grok's backend threw application/problem+json
+// Verifier transient-retry: grok's backend threw application/problem+json
 // for ~a minute on 2026-07-05 and a single nonce/probe attempt landing inside
 // that window = FAILED, even though the agent itself was fine. The retry
 // wraps AROUND the shared verifier call here at the gateway call-site —
@@ -478,7 +476,7 @@ export function isTransientChallengeFailure(response: ChallengeResponse): boolea
   return transientPatterns.some((re) => re.test(error));
 }
 
-/** Short backoff window (2-5s) between the one auto-retry and the original attempt, per docs/TECH-DEBT.md. */
+/** Short backoff window (2-5s) between the one auto-retry and the original attempt. */
 function transientRetryBackoffMs(): number {
   return 2_000 + Math.floor(Math.random() * 3_000);
 }
@@ -516,7 +514,7 @@ export async function runFullChallengeWithTransientRetry(
 
 export interface ConnectAgentOptions {
   /**
-   * Multi-instance seat slug (docs/DESIGN-multi-instance.md). Absent/'main'
+   * Multi-instance seat slug. Absent/'main'
    * behaves byte-identically to the pre-multi-instance single-seat gateway —
    * seat id collapses to manifestId (deriveSeatId). Must already be validated
    * by the caller (isValidInstanceId) when present and not 'main'; this
@@ -595,8 +593,7 @@ export async function connectAgent(
   };
   agents.set(agentId, state);
 
-  // Fast-fail path (docs/TECH-DEBT.md "connect-agent.mjs hangs full 300s when
-  // a seat binary is missing"): adapter.connect() throwing (binary-not-found,
+  // Fast-fail path: adapter.connect() throwing (binary-not-found,
   // auth-missing, handshake-failed — see e.g. claude-code's
   // verifyBinaryAndAuth) used to propagate straight out of connectAgent,
   // leaving `state` — already `agents.set()` above — stuck at CONNECTING
@@ -624,7 +621,7 @@ export async function connectAgent(
 
   const remoteWorkspace = resolveSshWorkspace(config);
   const verifier = createVerifier(workspaceRoot, getIdentityFromSession, remoteWorkspace);
-  // Verification-tier branch (docs/DESIGN-seat-verification-tiers.md): a
+  // Verification-tier branch: a
   // manifest declaring `verification: 'attested'` (tool-less HTTP seats,
   // e.g. ollama) runs the parallel attested challenge sequence instead of
   // the frozen full-tier verifier — see attestedVerifier.ts's module doc
@@ -637,10 +634,9 @@ export async function connectAgent(
   state.challengeHistory = result.responses;
   state.status = result.status;
   // runFullChallenge stops at the first failed challenge (verifier.ts), so on
-  // FAILED the last response IS the failing one — surface its .error as the
-  // human-useful reason instead of leaving statusReason undefined (TECH-DEBT
-  // "verify-failure statusReason not populated": grok FAILED read reason "-",
-  // and diagnosing it required the gate runner instead of the agent card).
+  // FAILED the last response IS the failing one — surface its.error as the
+  // human-useful reason instead of leaving statusReason undefined (a FAILED grok seat used to read
+  // reason "-", and diagnosing it required the gate runner instead of the agent card).
   state.statusReason =
     state.status === 'FAILED'
       ? result.responses[result.responses.length - 1]?.error
@@ -660,8 +656,7 @@ export async function connectAgent(
 
 /**
  * Graceful teardown of a live seat — the inverse of connectAgent. One-off /
- * throwaway seats (multi-instance smoke tests, docs/DESIGN-multi-instance.md:
- * e.g. hermes#judge, claude-code#test) need a clean programmatic way to be shut
+ * throwaway seats need a clean programmatic way to be shut
  * down. Nothing in the gateway polls health to REAP a seat whose adapter
  * process merely died — there is no heartbeat/stale timer running (the only
  * live intervals are memory re-index and the DB persist tick), so lastHeartbeat

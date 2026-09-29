@@ -29,8 +29,7 @@ export { codexManifest };
 export type { CodexTransportConfig } from './cliProcess.js';
 
 /**
- * CRITICAL (per gate-blocker 1 precedent on the Hermes adapter, and the reason
- * docs/DESIGN-seat-verification-tiers.md exists): the CODEX SESSION must read
+ * CRITICAL: the CODEX SESSION must read
  * the nonce file itself with its own tools. The adapter/gateway process NEVER
  * touches the filesystem for this. Verified live 2026-08-08: the CLI answered
  * a nonce challenge by issuing its own `Get-Content` shell call under a

@@ -6,7 +6,7 @@ import { PollCard } from './PollCard';
 const HISTORY_LIMIT = 20;
 
 /**
- * Approvals/Polls rail (docs/DESIGN-approvals-rail.md #5), FilesRail/MemoryRail
+ * Approvals/Polls rail, FilesRail/MemoryRail
  * pattern: every open poll across every room, newest first, plus a collapsed
  * history of the last 20 decided/expired polls. Cross-room by design — this
  * is the "find it even when you're not in that room" surface the motivating

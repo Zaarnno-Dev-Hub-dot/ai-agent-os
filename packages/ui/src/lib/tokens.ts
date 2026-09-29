@@ -1,6 +1,5 @@
 /**
- * Token count formatting for the budget meters (docs/DESIGN-token-budgets.md
- * §4: "TOKENS PRIMARY, e.g. `41k / 200k tok`"). Raw below 1000, otherwise Nk
+ * Token count formatting for the budget meters. Raw below 1000, otherwise Nk
  * (one decimal once >= 10k gets noisy) or N.nM past a million.
  */
 export function formatTokenCount(n: number): string {

@@ -28,9 +28,7 @@ function freshDataDir(): string {
  * Build an attachment the way real caller input (a POST /api/polls body) can
  * actually arrive: NOT checked against PollAttachment's `kind` union at
  * compile time — a missing/misnamed `kind` is exactly the reopened gap these
- * createPoll tests cover (SECURITY, design doc correction #1: createPoll
- * previously passed `input.attachments`/`disputeSides` straight through with
- * no call to this module's own isPollAttachment/isPollDisputeSide).
+ * createPoll tests cover.
  */
 function hostileAttachment(raw: Record<string, unknown>): PollAttachment {
   return raw as unknown as PollAttachment;

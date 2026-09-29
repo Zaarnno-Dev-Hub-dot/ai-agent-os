@@ -75,7 +75,7 @@ function splitSchemaStatements(schema: string): string[] {
 }
 
 // DDL errors used to be swallowed completely (bare `catch {}`), which masked
-// a real fts5-availability failure for days (docs/TECH-DEBT.md). The swallow
+// a real fts5-availability failure for days. The swallow
 // stays — most "failures" here are expected, idempotent re-application of
 // already-applied DDL on every boot (CREATE TABLE IF NOT EXISTS races,
 // column-already-exists, etc.) and must not become log spam — but the first
@@ -415,7 +415,7 @@ export function insertCostEvent(
 }
 
 /**
- * Boot rehydration (docs/DESIGN-token-budgets.md): room token tallies,
+ * Boot rehydration: room token tallies,
  * room.costTracker, and per-agent global cost all live only in memory
  * (RoomRelayState, Room.costTracker, GatewayState.globalCost) — none of them
  * are columns on their own, they're derived from the append-only

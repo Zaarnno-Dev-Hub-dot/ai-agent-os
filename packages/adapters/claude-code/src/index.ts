@@ -125,7 +125,7 @@ class ClaudeCodeSession implements AgentSession {
   private disposed = false;
   private sessionId: string | undefined;
   private activeChild: ReturnType<typeof spawnClaudeTurn>['child'] | null = null;
-  /** Q7 (TOP-TIER-QUEUE.md, 2026-07-21): the hand-rolled busy-wait send gate, owned once in @agent-os/shared instead of duplicated per adapter. Same grace-wait-then-throw semantics as before. */
+  /** Q7: the hand-rolled busy-wait send gate, owned once in @agent-os/shared instead of duplicated per adapter. Same grace-wait-then-throw semantics as before. */
   private readonly sendGate = new BusySendGate();
 
   constructor(
@@ -333,7 +333,7 @@ class ClaudeCodeSession implements AgentSession {
   }
 
   /**
-   * G2b reference emitter (G2B-AUTH-CONTRACT.md Amendment "A-adapter"). Derived from
+   * G2b reference emitter. Derived from
    * dispatch state this session already tracks for interrupt() — activeChild is
    * non-null only while a real CLI turn is running. No harness cooperation, no
    * fabricated verbs: undefined when idle, so the UI falls back to board/last-said.

@@ -296,7 +296,7 @@ describe('appendRouterLog', () => {
     expect(JSON.parse(lines[1])).toEqual({ ts: 2, roomId: 'room-1', cls: 'code', chosen: null, candidatesTried: ['grok-build', 'claude-code'] });
   });
 
-  // Non-blocking hot path (docs/TECH-DEBT.md "router-log hot path"): calling
+  // Non-blocking hot path: calling
   // appendRouterLog must return synchronously (fire-and-forget) rather than
   // block the caller on disk I/O — the whole point of the fix. A cheap smoke
   // assertion: the call itself returns `undefined` immediately (not a

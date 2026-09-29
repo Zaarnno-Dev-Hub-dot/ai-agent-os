@@ -6,11 +6,11 @@ import { StatusDot } from './StatusDot';
 import { formatTokenCount } from '../lib/tokens';
 
 /**
- * Global voice/rate setting (docs/DESIGN-voice-v1.md "Output (TTS)" — "single
+ * Global voice/rate setting ("Output (TTS)" — "single
  * global setting (localStorage), default system voice"). A small local
  * popover rather than a full rail, since unlike Polls/Files/Memory/Inspect
  * this has no room-scoped content of its own — same open/close-on-outside-
- * click shape as Sidebar's room-kebab menus (RoomRow), reusing .room-menu.
+ * click shape as Sidebar's room-kebab menus (RoomRow), reusing.room-menu.
  * Hidden entirely when TTS is unsupported — nothing here would do anything.
  */
 function VoiceSettingsPill() {
@@ -123,7 +123,7 @@ export function TopBar() {
   // money, never a painted $0.0000 for subscription/local agents.
   const spentUsd = totals?.estimatedCostUsd ?? 0;
   const fillPct = tokenCap ? Math.min(100, Math.max(percent, (tokensUsed / tokenCap) * 100)) : 0;
-  // Pinned-notes chips (docs/DESIGN-memory-read.md): current room's pins,
+  // Pinned-notes chips: current room's pins,
   // derived client-side from every memory.note event's pinnedInRooms field
   // (see gatewayStore's memory.note handling) — no separate fetch needed.
   const pinnedHere = room ? memoryPinnedByRoom.get(room.id) : undefined;

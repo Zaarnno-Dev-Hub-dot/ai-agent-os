@@ -6,7 +6,7 @@
  * (the "AgentOS Seats" scheduled task's entry point, Wave 5) reuses the exact
  * same connect/parse/wait logic instead of copy-pasting it — this repo
  * already has a named tech-debt item for copy-pasted adapter/connect logic
- * drifting apart (docs/TECH-DEBT.md "Adapter duplication"), so a second
+ * drifting apart ("Adapter duplication"), so a second
  * instance of it was worth avoiding here.
  *
  * Behavior is byte-identical to connect-agent.mjs's original inline version:
@@ -54,7 +54,7 @@ export function deriveSeatId(manifestId, instanceId) {
  * 2 on a malformed token. Never rejects.
  */
 export function connectSeats(tokens, opts = {}) {
-  const gatewayUrl = opts.gatewayUrl ?? 'ws://127.0.0.1:4110/ws';
+  const gatewayUrl = opts.gatewayUrl ?? process.env.AGENT_OS_GATEWAY_URL ?? 'ws://127.0.0.1:4110/ws';
   const timeoutMs = opts.timeoutMs ?? 300_000;
   const transportOverride = opts.transportOverride ?? {};
 

@@ -43,7 +43,6 @@ vi.mock('child_process', () => ({ spawn: vi.fn() }));
 const spawnMock = vi.mocked(spawn);
 // ============================================================================
 // Pure functions: seat-id derivation, validation, display name
-// (docs/DESIGN-multi-instance.md)
 // ============================================================================
 
 describe('deriveSeatId', () => {
@@ -414,7 +413,6 @@ describe('connectAgent seat keying', () => {
 
 // ============================================================================
 // connectAgent: FAILED verification populates statusReason
-// (docs/TECH-DEBT.md "Verify-failure statusReason not populated")
 // ============================================================================
 
 /** Registers a fake adapter whose session reports an identity that never matches fakeManifest's '^claude' pattern — fails CLOSED at the identity-echo challenge, same as a real impostor/misconfigured harness. */
@@ -484,8 +482,7 @@ describe('connectAgent statusReason on FAILED', () => {
 
 // ============================================================================
 // connectAgent: ollama attested tier, REAL adapter + REAL attestedVerifier
-// path, HTTP mocked (docs/DESIGN-seat-verification-tiers.md acceptance
-// items). This registers no fake adapter — 'ollama' is registered in
+// path, HTTP mocked. This registers no fake adapter — 'ollama' is registered in
 // adaptersByManifestId exactly like every production seat, so this is the
 // actual connectAgent -> runAttestedChallenge -> ollama adapter -> prove()
 // path a real Mini connection goes through, with only fetch() mocked
@@ -635,8 +632,7 @@ describe('connectAgent — ollama attested tier (real adapter, mocked HTTP endpo
 // ============================================================================
 // connectAgent: adapter.connect() failure (binary-not-found, auth-missing,
 // etc.) fails the seat FAST to FAILED instead of leaving it stuck at
-// CONNECTING (docs/TECH-DEBT.md "connect-agent.mjs hangs full 300s when a
-// seat binary is missing")
+// CONNECTING
 // ============================================================================
 
 /** Registers a fake adapter whose connect() rejects the way a real adapter does on a missing binary (see claude-code's verifyBinaryAndAuth). */
@@ -881,8 +877,7 @@ describe('disconnectAgent', () => {
 });
 
 // ============================================================================
-// Verifier transient retry (docs/TECH-DEBT.md "Verifier single-shot on
-// transient upstream flakes") — 2026-07-05 grok problem+json blip caused a
+// Verifier transient retry — 2026-07-05 grok problem+json blip caused a
 // false FAILED on a single attempt. isTransientChallengeFailure classifies,
 // runFullChallengeWithTransientRetry wraps the shared verifier call with ONE
 // retry when the failure classifies transient.

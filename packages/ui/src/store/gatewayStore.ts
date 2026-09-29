@@ -11,7 +11,7 @@ import {
 import { useVoiceStore } from './voiceStore';
 import { getHumanToken } from '../lib/reviewPolicy';
 
-/** Two-Reviewer Policy mode (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md) — re-exported for component convenience so callers don't need a second import from '@agent-os/shared' just for this string union. */
+/** Two-Reviewer Policy mode — re-exported for component convenience so callers don't need a second import from '@agent-os/shared' just for this string union. */
 export type ReviewPolicyMode = 'off' | 'mutations' | 'all';
 
 /** One raw frame kept for the inspect panel's "raw frames" debug tab. */
@@ -47,7 +47,7 @@ export interface TokenTotals {
 
 const MAX_RECENT_TURNS_PER_AGENT = 20;
 
-/** One vault note as shown in Memory panel search results (docs/DESIGN-memory-read.md). */
+/** One vault note as shown in Memory panel search results. */
 export interface MemorySearchResult {
   path: string;
   title: string;
@@ -64,7 +64,7 @@ export interface MemoryActiveNote {
 }
 
 /**
- * Approvals/Polls rail (docs/DESIGN-approvals-rail.md #2): decision cards
+ * Approvals/Polls rail: decision cards
  * agents or bridged systems (Paperclip) put in front of the operator. Gateway-local
  * — Room/ServerEvent have no field for this (packages/shared is frozen) —
  * hydrated from state.sync's additive `polls` field and kept live via
@@ -83,7 +83,7 @@ export interface PollDecision {
   note?: string;
 }
 
-/** One deferral event (Wave 6, docs/DESIGN-approvals-app-v2.md correction #2) — logged, never overwritten. */
+/** One deferral event — logged, never overwritten. */
 export interface PollDeferral {
   at: number;
   note?: string;
@@ -99,7 +99,7 @@ export interface PollMessage {
   content: string;
 }
 
-/** Rich-card evidence (Wave 6): a screenshot/graph/table/text blob. `attachmentSrc()` in lib/pollPresent.ts is the ONLY place `url`/`data` may become a DOM sink (an `<img src>`; there is no `<a href>`/`<iframe>`/`<object>` sink for these fields anywhere) — never read these fields directly into src/href elsewhere. Components should call `resolveAttachmentView()` (also lib/pollPresent.ts), not `attachmentSrc()` directly — it wraps attachmentSrc with the `kind` gate (design doc correction #1, reopened) that decides whether a value is even eligible to reach that sink. */
+/** Rich-card evidence (Wave 6): a screenshot/graph/table/text blob. `attachmentSrc()` in lib/pollPresent.ts is the ONLY place `url`/`data` may become a DOM sink (an `<img src>`; there is no `<a href>`/`<iframe>`/`<object>` sink for these fields anywhere) — never read these fields directly into src/href elsewhere. Components should call `resolveAttachmentView()` (also lib/pollPresent.ts), not `attachmentSrc()` directly — it wraps attachmentSrc with the `kind` gate that decides whether a value is even eligible to reach that sink. */
 export interface PollAttachment {
   kind: 'image' | 'graph' | 'table' | 'text';
   url?: string;
@@ -121,7 +121,7 @@ export interface Poll {
   roomId: string;
   question: string;
   detail?: string;
-  /** Plain-language WHY (Wave 6) — the inbox card's "Why" block prefers this over `detail` when present. Absent on v1 (pre-Wave-6) polls, which render exactly as before (design doc correction #4). */
+  /** Plain-language WHY (Wave 6) — the inbox card's "Why" block prefers this over `detail` when present. Absent on v1 (pre-Wave-6) polls, which render exactly as before. */
   detailSummary?: string;
   /** Plain-language recommendation text (Wave 6), shown alongside/instead of the recommended option's label. */
   recommendation?: string;
@@ -141,8 +141,7 @@ export interface Poll {
   /** Non-deciding notes (Wave 6): deferral notes + more-info asks, newest last. */
   messages?: PollMessage[];
   // 'workshop' added Wave 7 M3 — was missing here even though gateway-side
-  // polls.ts's Poll type has carried it since Wave 6 (docs/DESIGN-workshop-
-  // flow.md); a workshop poll's `source` was reaching this store as a
+  // polls.ts's Poll type has carried it since Wave 6; a workshop poll's `source` was reaching this store as a
   // string TS didn't know about (harmless at runtime — this is a plain
   // data field, not a discriminant anything switched on — but it silently
   // widened this type's real-world truth). Two-Reviewer Policy's
@@ -150,9 +149,9 @@ export interface Poll {
   // actually needs to compare against it.
   source: 'local' | 'paperclip' | 'workshop';
   externalRef?: { approvalId: string; companyId: string };
-  /** Rich-card evidence (Wave 6, design doc: "images, graphs, descriptions"). */
+  /** Rich-card evidence. */
   attachments?: PollAttachment[];
-  /** Both sides of an agent disagreement, unedited (Wave 6, design doc: "2 sides of the argument if agents disagree"). */
+  /** Both sides of an agent disagreement, unedited. */
   disputeSides?: PollDisputeSide[];
 }
 
@@ -174,7 +173,7 @@ export interface LoopStatus {
 }
 
 /**
- * Studio Dock registry entry (docs/DESIGN-studio-dock.md §2), hydrated from
+ * Studio Dock registry entry, hydrated from
  * state.sync's additive `dockApps` field (gateway-local — packages/shared is
  * frozen — same cast-at-the-endpoint pattern as polls/projects above).
  */
@@ -232,7 +231,7 @@ export interface UIState {
   /** Last server `error` event, surfaced as a toast (gateway rejections must be visible). */
   errorToast: { code: string; message: string; at: number } | null;
   /**
-   * Room ids with autoroute ON (docs/DESIGN-router.md #2). Room itself has no
+   * Room ids with autoroute ON. Room itself has no
    * field for this (packages/shared is frozen) — hydrated on every connect
    * (the gateway sends one `room.autoroute.status` per currently-autorouted
    * room right after its initial state.sync, mirroring how state.sync itself
@@ -256,7 +255,7 @@ export interface UIState {
   /** Loop-lite state per room (Wave 2), keyed by roomId — see LoopStatus doc comment. */
   loopByRoom: Map<string, LoopStatus>;
 
-  /** Vault memory layer v1 (docs/DESIGN-memory-read.md) UI state. */
+  /** Vault memory layer v1 UI state. */
   memoryRailOpen: boolean;
   memorySearchQuery: string;
   memorySearchResults: MemorySearchResult[];
@@ -264,14 +263,14 @@ export interface UIState {
   /** roomId -> (path -> title), for the room header's pinned chips + the panel's "pinned in this room" list. Derived entirely from memory.note's pinnedInRooms field (see applyServerEvent). */
   memoryPinnedByRoom: Map<string, Map<string, string>>;
 
-  /** Approvals/Polls rail (docs/DESIGN-approvals-rail.md). Full set of polls this client knows about, across all rooms — hydrated from state.sync + poll.updated. */
+  /** Approvals/Polls rail. Full set of polls this client knows about, across all rooms — hydrated from state.sync + poll.updated. */
   polls: Poll[];
   pollsRailOpen: boolean;
   /** Poll ids dismissed from the in-room inline card (non-blocking — the poll still lives in the rail and history). Cleared automatically once a poll leaves 'open' status. */
   dismissedPollIds: Set<string>;
 
   /**
-   * Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md).
+   * Two-Reviewer Policy.
    * Keyed by pollId — hydrated from state.sync's additive `pollReviews`
    * field (same windowing as `polls`: open + last 20 settled) and kept live
    * via `poll.review.updated` (upsert-by-id within the poll's array), both
@@ -284,12 +283,12 @@ export interface UIState {
   /** Current review_policy mode — hydrated from state.sync's additive `reviewPolicy` field, kept live via `review.policy.status`. */
   reviewPolicyMode: ReviewPolicyMode;
 
-  /** Studio Dock (docs/DESIGN-studio-dock.md). Registry hydrated from state.sync; active app id null = room chat view, set = DockView mounted in the main pane in its place. */
+  /** Studio Dock. Registry hydrated from state.sync; active app id null = room chat view, set = DockView mounted in the main pane in its place. */
   dockApps: DockAppEntry[];
   activeDockAppId: string | null;
 
   /**
-   * Agent Dossiers (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-surface.md).
+   * Agent Dossiers.
    * Hydrated from state.sync's additive `dossiersEnabled` boolean (gateway-
    * local — packages/shared is frozen, same cast-at-the-endpoint pattern as
    * dockApps/polls above). "dossiersDir config unset (default) = feature
@@ -401,7 +400,7 @@ export const useStore = create<UIState>((set, get) => ({
       };
       next.inspectFrames = [...state.inspectFrames.slice(-(MAX_INSPECT_FRAMES - 1)), frame];
 
-      // room.autoroute.status (docs/DESIGN-router.md #2) is a gateway-local
+      // room.autoroute.status is a gateway-local
       // extension of the frozen shared ServerEvent union (Room has no field
       // for this) — identical envelope shape, typed at the two endpoints
       // instead of packages/shared, same pattern as room.rollover in index.ts.
@@ -431,8 +430,7 @@ export const useStore = create<UIState>((set, get) => ({
         return { ...next, loopByRoom };
       }
 
-      // agent.cost.snapshot (docs/TECH-DEBT.md "Agent telemetry reads 0s on a
-      // fresh tab") is a gateway-local extension of the frozen ServerEvent
+      // agent.cost.snapshot is a gateway-local extension of the frozen ServerEvent
       // union (AgentSummary has no per-agent cost field) — same pattern as
       // room.autoroute.status above. Sent once per connect with the gateway's
       // already-rehydrated globalCost.byAgent (recomputeCostTotals at boot),
@@ -460,7 +458,7 @@ export const useStore = create<UIState>((set, get) => ({
         return { ...next, agentTokenTotals: agentTotals };
       }
 
-      // poll.updated (docs/DESIGN-approvals-rail.md #3) is a gateway-local
+      // poll.updated is a gateway-local
       // extension of the frozen shared ServerEvent union (ServerEvent has no
       // dedicated poll field) — typed at the two endpoints instead of
       // packages/shared, same cast idiom as room.autoroute.status above.
@@ -482,7 +480,7 @@ export const useStore = create<UIState>((set, get) => ({
         return { ...next, polls, dismissedPollIds };
       }
 
-      // poll.review.updated (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md)
+      // poll.review.updated
       // — same gateway-local-extension idiom as poll.updated above. Upsert
       // by id WITHIN that poll's review array (a poll can carry up to 2
       // active slots, plus timed-out originals once a T+4 substitute has
@@ -534,7 +532,7 @@ export const useStore = create<UIState>((set, get) => ({
             next.archivedRooms = extra.archivedRooms ?? [];
             next.projects = extra.projects ?? [];
             next.projectAssignments = new Map(Object.entries(extra.projectAssignments ?? {}));
-            // Approvals/Polls rail (docs/DESIGN-approvals-rail.md #3): same
+            // Approvals/Polls rail: same
             // additive state.sync field as archivedRooms/projects above.
             // Full replace on hydrate — the gateway is authoritative and this
             // fires on every (re)connect, so there's no live-accumulation to
@@ -553,7 +551,7 @@ export const useStore = create<UIState>((set, get) => ({
               next.pollReviews = pollReviews;
             }
             next.reviewPolicyMode = extra.reviewPolicy?.mode ?? next.reviewPolicyMode;
-            // Studio Dock registry (docs/DESIGN-studio-dock.md §2): static
+            // Studio Dock registry: static
             // per-boot list, same additive state.sync field pattern.
             next.dockApps = extra.dockApps ?? [];
             // Agent Dossiers (Wave 7 stretch, M4): boolean feature flag, same
@@ -588,7 +586,7 @@ export const useStore = create<UIState>((set, get) => ({
             next.loopByRoom = loopByRoom;
           }
           // Hydrate room token/cost totals from the gateway's rehydrated
-          // costTracker (docs/DESIGN-token-budgets.md boot rehydration) —
+          // costTracker —
           // only for rooms we haven't already been live-accumulating via
           // cost.event, so a mid-session state.sync (e.g. after a room
           // mutation) can't stomp totals this client already tracked more
@@ -653,7 +651,7 @@ export const useStore = create<UIState>((set, get) => ({
             typing.delete(`${event.payload.roomId}:${event.payload.senderId}`);
             next.typing = typing;
 
-            // Voice v1 auto-read (docs/DESIGN-voice-v1.md): hand agent
+            // Voice v1 auto-read: hand agent
             // messages to the voice store, which owns the toggle/visibility
             // gating and the bounded read-queue. Pure client-side hop — no
             // wire event, voiceStore is a separate zustand store
@@ -838,12 +836,11 @@ export const useStore = create<UIState>((set, get) => ({
     if (!ws || !connected || ws.readyState !== WebSocket.OPEN) {
       return false;
     }
-    // humanToken auto-attach (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md
-    // B2): poll.decide / agent.disconnect require it server-side
+    // humanToken auto-attach: poll.decide / agent.disconnect require it server-side
     // (index.ts/pollsRoutes.ts) — centralizing the attach HERE means no
     // individual call site (PollCard's decide(), the agent-card disconnect
     // button, …) has to remember to add it. "No typed friction anywhere"
-    // (design doc) — this is silent plumbing, never a prompt. Every OTHER
+    // — this is silent plumbing, never a prompt. Every OTHER
     // event type is sent unchanged; readAsHumanTokenGated only widens the
     // payload object, it never removes anything a caller already set.
     const HUMAN_TOKEN_GATED_TYPES = new Set(['poll.decide', 'agent.disconnect']);
@@ -872,8 +869,7 @@ export const useStore = create<UIState>((set, get) => ({
     set((state) => {
       const unread = new Map(state.unreadByRoom);
       unread.delete(roomId);
-      // Picking a room returns the main pane to chat (docs/DESIGN-studio-dock.md
-      // §1: "mounts it in the main pane... until the user clicks back to a room").
+      // Picking a room returns the main pane to chat.
       return { activeRoomId: roomId, unreadByRoom: unread, activeDockAppId: null };
     }),
   dismissErrorToast: () => set({ errorToast: null }),

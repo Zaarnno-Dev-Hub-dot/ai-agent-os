@@ -655,7 +655,7 @@ describe('REGRESSION (review findings, wave3/f2a): concurrent wakes + mention in
 });
 
 /**
- * B7 (TOP-TIER-QUEUE.md, design 2026-07-09, landed 2026-07-21): end-to-end
+ * B7: end-to-end
  * regressions for the two residual holes fix/bridge-wake-single-flight
  * @21e9dcc documented as unfixable while relay.ts stayed frozen. Both drive
  * the REAL relay.ts/bridge.ts pipeline (same harness as the rest of this

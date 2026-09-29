@@ -1,6 +1,5 @@
 /**
- * Two-Reviewer Policy v1.1 — pure logic (Wave 7 M3,
- * docs/DESIGN-two-reviewer-policy.md). Config load/save, reviewer selection,
+ * Two-Reviewer Policy v1.1 — pure logic. Config load/save, reviewer selection,
  * strict verdict parsing, and prompt building all live here as pure/testable
  * functions — same split as polls.ts (pure state) vs pollsRoutes.ts (route +
  * side effects): this module owns decision logic; pollReviewsDb.ts owns SQL
@@ -13,12 +12,12 @@ import { join } from 'path';
 import type { AdapterManifest, AgentState, AgentStatus, ReviewVerdict } from '@agent-os/shared';
 
 // ============================================================================
-// Config — review_policy knob (design doc "Config")
+// Config — review_policy knob
 // ============================================================================
 
 export type ReviewPolicyMode = 'off' | 'mutations' | 'all';
 
-/** Design doc "Config": "Default `mutations`." */
+/** the original design "Config": "Default `mutations`." */
 export const DEFAULT_REVIEW_POLICY_MODE: ReviewPolicyMode = 'mutations';
 
 function reviewPolicyFilePath(dataDir: string): string {
@@ -52,7 +51,7 @@ export function saveReviewPolicy(dataDir: string, state: ReviewPolicyState): voi
 
 // ============================================================================
 // Coverage — which actions the current policy mode subjects to review
-// (design doc "Config"). 'mutations': workshop proposes (today's only agent
+//. 'mutations': workshop proposes (today's only agent
 // code/state path) — structured so a later mutating action enrolls by adding
 // a type to the switch below, not by touching every call site. 'all' adds
 // any seat message carrying an attachment or diff; plain chat is EXEMPT
@@ -85,7 +84,7 @@ function isLane(v: unknown): v is Lane {
 }
 
 /**
- * `config/lanes.json` (design doc "Teams-as-lanes"): repo file, the operator-
+ * `config/lanes.json`: repo file, the operator-
  * editable, `{"lanes": [{"builder": "<seatId>", "reviewer": "<seatId>"}]}`.
  * Tamper model = same as any repo file (git history) — this module only
  * reads it. Absent/corrupt file degrades to "no lanes" (every seat unpaired)
@@ -106,7 +105,7 @@ export function loadLanes(repoRoot: string): Lane[] {
  * The OTHER seat in `seatId`'s lane pairing, or undefined if it is in no
  * lane. Bidirectional: a seat can be named as either `builder` or `reviewer`
  * in the config and is excluded from reviewing its own lane partner either
- * way (design doc: "policy reviewers always come from outside the pair").
+ * way.
  */
 export function lanePartnerOf(lanes: Lane[], seatId: string): string | undefined {
   for (const lane of lanes) {
@@ -117,12 +116,12 @@ export function lanePartnerOf(lanes: Lane[], seatId: string): string | undefined
 }
 
 // ============================================================================
-// Selection (design doc "Selection")
+// Selection
 // ============================================================================
 
 export interface ReviewCandidate {
   seatId: string;
-  /** manifest.harness at selection time — the "family" the design doc's diversity/exclusion rules key off (e.g. ollama's `homebrew` vs `claude-code`/`grok-build`/`hermes`/`openclaw`). */
+  /** manifest.harness at selection time — the "family" the original design's diversity/exclusion rules key off (e.g. ollama's `homebrew` vs `claude-code`/`grok-build`/`hermes`/`openclaw`). */
   family: string;
   /** True for a manifest declaring `verification: 'attested'` (tool-less, containment-guaranteed) — see attestedVerifier.ts's isAttestedManifest. */
   attested: boolean;
@@ -156,11 +155,10 @@ export interface SelectReviewersInput {
    * Lower = selected less recently for review duty (a seat never selected
    * before should sort first) — sourced from the poll_reviews ledger
    * (pollReviewsDb.ts's lastSelectedAt query), so rotation is genuinely
-   * restart-durable without a separate cursor file (design doc: "Rotation
-   * cursor: persisted in the reviews table").
+   * restart-durable without a separate cursor file.
    */
   lastSelectedAt: (seatId: string) => number;
-  /** Seat ids to additionally exclude from BOTH slots — used by the T+4 substitute path to exclude reviewers already in play for this poll (design doc: substitute selection stays anchored to the propose-time snapshot, never a fresh live query — see pollReviews.ts). Optional; defaults to none. */
+  /** Seat ids to additionally exclude from BOTH slots — used by the T+4 substitute path to exclude reviewers already in play for this poll. Optional; defaults to none. */
   additionalExclusions?: Iterable<string>;
 }
 
@@ -171,21 +169,19 @@ export type SelectReviewersResult =
 /**
  * Slot-1 = an ATTESTED tool-less seat; slot-2 = a VERIFIED full-harness seat
  * from a DIFFERENT family than slot-1 — excluding the proposer and its lane
- * partner from both slots (design doc "Selection"). Rotation: within each
+ * partner from both slots. Rotation: within each
  * slot's eligible set, pick the least-recently-selected candidate (ties
  * broken by seatId, ascending, for determinism).
  *
  * `poolSize` = the count of VERIFIED seats excluding the proposer and its
  * lane partner — the FULL pool eligible for review duty at this snapshot,
  * not just whichever slot-2 candidates survive the family-diversity narrow.
- * This is what the ledger records for the pool-degeneracy instrumentation
- * (design doc F4: "at 7 seats the eligible set is often exactly the same
- * two seats — near-deterministic assignment").
+ * This is what the ledger records for the pool-degeneracy instrumentation.
  *
  * Fails open (`ok: false`, human-readable reason) when no candidate survives
  * exclusions for either slot. The caller (pollReviews.ts) treats this as "no
  * reviewers assigned this time" — NEVER as a reason to block the underlying
- * poll/action (design doc: "reviews NEVER gate or extend a poll's life").
+ * poll/action.
  */
 export function selectReviewers(input: SelectReviewersInput): SelectReviewersResult {
   const lanePartner = input.lanePartnerOf(input.proposerId);
@@ -216,12 +212,8 @@ export function selectReviewers(input: SelectReviewersInput): SelectReviewersRes
 }
 
 /**
- * Substitute selection for a single slot at T+4 (design doc F7): anchored to
- * the SAME candidate list the original propose-time snapshot used (never a
- * fresh live query — design doc F5 "no re-select from a post-propose pool"
- * is about not re-widening the POOL; this narrow, same-slot substitution
- * from the frozen snapshot is the one exception the design doc itself
- * describes as "the substitute wakes"). Excludes the original reviewer,
+ * Substitute selection for a single slot at T+4: anchored to
+ * the SAME candidate list the original propose-time snapshot used. Excludes the original reviewer,
  * the OTHER slot's already-selected reviewer (and its family, for slot 2),
  * the proposer, and the lane partner.
  */
@@ -251,7 +243,7 @@ export function selectSubstitute(
 }
 
 // ============================================================================
-// Verdict parsing (design doc F/B3 — "the most-attacked invariant")
+// Verdict parsing
 // ============================================================================
 
 /**
@@ -273,7 +265,7 @@ function isReviewVerdictValue(v: unknown): v is ReviewVerdict {
 }
 
 /**
- * Strict fenced-block parse, exactly per the design doc's schema:
+ * Strict fenced-block parse, exactly per the original design's schema:
  * ` ```verdict\n{"verdict": "approve"|"concerns"|"reject", "findings": ["..."]}\n``` `
  *
  * Requires: EXACTLY one ```verdict fenced block anywhere in the text; its
@@ -288,7 +280,7 @@ function isReviewVerdictValue(v: unknown): v is ReviewVerdict {
  * missing verdict key, non-array findings, findings containing a non-string
  * — returns `{ ok: false }`. The caller renders this as `unparseable`
  * (distinct gray/striped chip, raw text expandable) and NEVER coerces it to
- * 'approve' — the exact invariant the design doc's adversarial review
+ * 'approve' — the exact invariant the original design's adversarial review
  * (finding B3) flagged as the highest-value attack surface.
  */
 export function parseVerdictBlock(text: string): { ok: true; parsed: ParsedVerdict } | { ok: false } {
@@ -316,10 +308,7 @@ export function parseVerdictBlock(text: string): { ok: true; parsed: ParsedVerdi
 }
 
 // ============================================================================
-// Wake prompt (design doc "Review execution" step 2: "Prompt: the diff/
-// action content behind an untrusted-content header + instruction to REFUTE
-// and return a verdict block" + acceptance: "Wake prompts carry the standing
-// untrusted-content header.")
+// Wake prompt
 // ============================================================================
 
 export const REVIEW_UNTRUSTED_CONTENT_HEADER =
@@ -330,9 +319,7 @@ export const REVIEW_VERDICT_INSTRUCTIONS =
 
 /**
  * Build the review wake prompt. Deliberately does NOT reference the OTHER
- * reviewer's seat id, verdict, or existence anywhere (design doc F6
- * isolation — "reviewers never see each other's identity or verdict before
- * both attach") — this function only ever receives this ONE reviewer's
+ * reviewer's seat id, verdict, or existence anywhere — this function only ever receives this ONE reviewer's
  * context, so there is nothing to leak by construction, not by an
  * after-the-fact filter.
  */
@@ -346,7 +333,7 @@ export function buildReviewPrompt(question: string, detail: string | undefined, 
   return parts.join('\n');
 }
 
-/** `Review — <seatId>` — the exact, reused-by-name per-seat room (Paperclip-pattern naming, design doc F6). Isolation comes from every reviewer having ITS OWN dedicated room, reused by name across every review it ever does — never shared with any other seat. */
+/** `Review — <seatId>` — the exact, reused-by-name per-seat room. Isolation comes from every reviewer having ITS OWN dedicated room, reused by name across every review it ever does — never shared with any other seat. */
 export function reviewRoomName(seatId: string): string {
   return `Review — ${seatId}`;
 }

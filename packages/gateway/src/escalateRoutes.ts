@@ -1,5 +1,5 @@
 /**
- * POST /api/escalate (Wave 6, docs/DESIGN-urgent-sms-escalation.md). REST,
+ * POST /api/escalate. REST,
  * loopback trust model — same convention as POST /api/bridge/wake and POST
  * /api/polls ("the gateway binds 127.0.0.1 and trusts local callers; this
  * endpoint invents no new auth system"). Pulled into its own module — same
@@ -8,7 +8,7 @@
  * Fastify instance + fake deps, no full gateway boot required), index.ts
  * owns wiring it to the live maps/closures.
  *
- * Mechanics (design doc): (1) post the escalation as a system line into an
+ * Mechanics: (1) post the escalation as a system line into an
  * "Urgent" room (create-once by name — the room IS the audit log), (2)
  * unless suppressed by quiet hours, bridge-wake the hermes seat with a fixed
  * SMS-skill-triggering template and await its next turn — REUSING bridge.ts's
@@ -39,10 +39,10 @@ import {
   type EscalationSeverity,
 } from './escalations.js';
 
-/** `Urgent` — the exact, reused-by-name room the escalate route finds-or-creates (design doc: "create-once by name, the room IS the audit log"). */
+/** `Urgent` — the exact, reused-by-name room the escalate route finds-or-creates. */
 export const URGENT_ROOM_NAME = 'Urgent';
 
-/** The one seat this feature ever wakes — the design doc is specifically "use Hermes as the go-between" (laptop Hermes has the live phone/SMS skill). */
+/** The one seat this feature ever wakes — the original design is specifically "use Hermes as the go-between" (laptop Hermes has the live phone/SMS skill). */
 export const ESCALATE_TARGET_SEAT_ID = 'hermes';
 
 /** Non-agent sender for the wake message, same class as bridge.ts's BRIDGE_SENDER_ID / pollsRoutes.ts's POLL_SYSTEM_SENDER_ID — never registered in the `agents` map. */
@@ -57,7 +57,7 @@ export const ESCALATE_SENDER_ID = 'escalate-system';
  */
 export const ESCALATE_WAKE_TIMEOUT_MS = 120_000;
 
-/** SMS body cap from the design doc's fixed template: "<body ≤240 chars>". */
+/** SMS body cap from the original design's fixed template: "<body ≤240 chars>". */
 export const SMS_BODY_MAX_LEN = 240;
 
 function truncate(text: string, maxLen: number): string {
@@ -176,8 +176,7 @@ export function registerEscalateRoute(fastify: FastifyInstance, ctx: EscalateRou
       return { error: "title, body, and severity ('high'|'critical') are required." };
     }
 
-    // Secret guard (design doc "Policy": "Body NEVER includes secrets/keys/
-    // file contents — title+pointer only"). Checked BEFORE the rate limiter
+    // Secret guard. Checked BEFORE the rate limiter
     // and BEFORE anything is persisted or posted anywhere — a rejected
     // escalation leaves no trace of the offending content, and does not
     // consume any of the 3/day cap.
@@ -237,7 +236,7 @@ export function registerEscalateRoute(fastify: FastifyInstance, ctx: EscalateRou
         smsOutcome = 'failed';
         ctx.postSystemLine(room.id, `→ escalate: the ${ESCALATE_TARGET_SEAT_ID} seat is not VERIFIED — could not wake it for SMS.`);
       } else {
-        // Wave 7 M2 (docs/WIP-2026-07-09-wave7-m2-sms-carrier-leg.md) proved
+        // Wave 7 M2 proved
         // hermes's *chat reply* to a bare wake is not evidence a real text
         // went out: twice now (Wave 6 smoke, Wave 7 M2 retest) it replied
         // "Acknowledged, standing by" with zero (or one wrong-guess) tool

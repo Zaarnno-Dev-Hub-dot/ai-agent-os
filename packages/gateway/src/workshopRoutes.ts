@@ -1,6 +1,5 @@
 /**
- * Workshop flow — route + git-apply orchestration (Wave 6,
- * docs/DESIGN-workshop-flow.md). POST /api/workshop/propose reads a seat's
+ * Workshop flow — route + git-apply orchestration. POST /api/workshop/propose reads a seat's
  * drafted MANIFEST.json + target files from its own workspace, validates
  * every rule in workshop.ts, and creates a POLL (source 'workshop') in the
  * "Workshop" room — same split as polls.ts (pure state) vs. pollsRoutes.ts
@@ -62,13 +61,11 @@ export interface WorkshopRouteContext {
   postSystemLine: (roomId: string, content: string) => void;
   persistRoomMutation: (room: Room) => void;
   /**
-   * Two-Reviewer Policy hook (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md
-   * "Review execution" step 1: "Covered action -> card enters
-   * awaiting-review; the action itself is unchanged"). Fired AFTER the poll
+   * Two-Reviewer Policy hook. Fired AFTER the poll
    * is created/persisted/broadcast and the propose response is about to go
    * out — fire-and-forget from THIS route's perspective; a failed/absent
    * selection inside the hook must never fail or slow down propose itself
-   * (design doc: "reviews NEVER gate or extend a poll's life"). Optional so
+   *. Optional so
    * every pre-M3 test/caller keeps working unchanged; production wiring
    * (index.ts) always supplies it.
    */
@@ -92,7 +89,7 @@ function findOrCreateWorkshopRoom(ctx: WorkshopRouteContext): Room {
 }
 
 /**
- * Register `POST /api/workshop/propose` (design doc §"Propose"). REST,
+ * Register `POST /api/workshop/propose`. REST,
  * loopback trust model — same convention as POST /api/polls / POST
  * /api/bridge/wake ("the gateway binds 127.0.0.1 and trusts local callers;
  * this endpoint invents no new auth system"). Fail-closed: the first
@@ -200,7 +197,7 @@ export function registerWorkshopRoute(fastify: FastifyInstance, ctx: WorkshopRou
     // diffAttachments exists. Without this, a workshop poll's diff is present
     // on the wire (diffAttachments, still set below for workshopSnapshot's
     // sibling/applyWorkshopPoll's own use) but never rendered — "the poll
-    // card carries the diff" (design doc) would be false. Reuses already-
+    // card carries the diff" would be false. Reuses already-
     // shipped, already-tested rendering; no UI change needed.
     const diffPollAttachments: PollAttachment[] = diffAttachments.map((d) => ({
       kind: 'text',
@@ -299,7 +296,7 @@ function cleanupWorktreeAndBranch(projectRoot: string, worktreeDir: string, bran
 }
 
 /**
- * Approve → apply (design doc §"Decide"): `git worktree add` a throwaway
+ * Approve → apply: `git worktree add` a throwaway
  * worktree on a new branch `workshop/<slug>` off `main`, write every
  * snapshotted target file, commit, capture the sha, remove the worktree
  * (keep the branch). NEVER touches `main` — the worktree is added FROM main
@@ -310,7 +307,7 @@ function cleanupWorktreeAndBranch(projectRoot: string, worktreeDir: string, bran
  * re-propose/re-approve collision) rather than guessing reuse/merge
  * semantics. Any failure AFTER the branch is created rolls the branch back
  * out (`git branch -D`) alongside the worktree, so a broken apply leaves no
- * trace — same "nothing applied" spirit the design doc gives the reject
+ * trace — same "nothing applied" spirit the original design gives the reject
  * path, extended to apply-time failures.
  *
  * Author/committer identity is an explicit system identity
@@ -334,7 +331,7 @@ export async function applyWorkshopPoll(ctx: WorkshopApplyContext, poll: Poll): 
     return { ok: false, error: 'workshopSnapshot has no targets to apply.' };
   }
 
-  // Defense-in-depth (docs/GATE-2026-07-09-wave6.md "Accepted finding"): the
+  // Defense-in-depth: the
   // snapshot was validated at propose time, but a corrupted/hand-edited
   // data/polls.json could carry a snapshot whose repoPath escapes the worktree
   // (traversal) or targets a frozen file. Re-validate every path against the

@@ -46,8 +46,8 @@ export function Composer({ room }: { room: Room | undefined }) {
   const [mentionActiveIndex, setMentionActiveIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Composer auto-grow + manual resize (docs/TECH-DEBT.md Wave 7 queue,
-  // — see lib/composerSize.ts for the full design note.
+  // Composer auto-grow + manual resize: see lib/composerSize.ts for the full
+  // design note.
   // `autoHeight` tracks the content-driven height (recomputed below whenever
   // `value` changes); `manualHeight` is null until the user drags the
   // top-edge handle, at which point it takes precedence over `autoHeight`
@@ -57,8 +57,8 @@ export function Composer({ room }: { room: Room | undefined }) {
   const [manualHeight, setManualHeight] = useState<number | null>(() => loadManualHeight());
   const composerHeight = resolveComposerHeight(manualHeight, autoHeight);
 
-  // Voice v1 (docs/DESIGN-voice-v1.md): push-to-talk dictation. Click-to-
-  // toggle (the design doc allows either that or true press-and-hold) —
+  // Voice v1: push-to-talk dictation. Click-to-
+  // toggle —
   // simpler and more reliable across pointer/touch input than hold-to-record.
   // Recognized text is only ever written into `value` below — never sent.
   const [dictating, setDictating] = useState(false);
@@ -78,9 +78,7 @@ export function Composer({ room }: { room: Room | undefined }) {
   const disabled = !room;
 
   // Belt-and-suspenders: stop a live mic session if this component ever
-  // unmounts mid-dictation (it doesn't today — Composer is a stable single
-  // instance per docs/DESIGN-voice-v1.md's own review — but a leaked-open mic
-  // is exactly the kind of thing that shouldn't depend on that staying true).
+  // unmounts mid-dictation.
   useEffect(() => {
     return () => {
       recognitionRef.current?.stop();
@@ -137,7 +135,7 @@ export function Composer({ room }: { room: Room | undefined }) {
   }
 
   // Double-click the handle: drop the manual override and go back to
-  // auto-grow (`docs/TECH-DEBT.md`'s suggested reset gesture). Clears the
+  // auto-grow. Clears the
   // persisted value too, so a reload doesn't resurrect the old manual size.
   function handleResizeReset() {
     setManualHeight(null);
@@ -232,8 +230,7 @@ export function Composer({ room }: { room: Room | undefined }) {
 
   function updateMentionState(text: string, caret: number) {
     const upToCaret = text.slice(0, caret);
-    // '#' is included so typing a multi-instance seat id (docs/DESIGN-multi-
-    // instance.md, e.g. `@claude-code#work`) keeps the autocomplete popup
+    // '#' is included so typing a multi-instance seat id keeps the autocomplete popup
     // open through the '#' instead of it terminating the mention query.
     const match = /@([a-z0-9_#-]*)$/i.exec(upToCaret);
     if (match) {

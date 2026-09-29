@@ -23,7 +23,7 @@ function agentSource(agent: AgentSummary): string {
 type Tab = 'summary' | 'telemetry' | 'raw' | 'dossier';
 
 /**
- * Agent Dossiers (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-surface.md):
+ * Agent Dossiers:
  * one fetch's worth of state for a single seat's drawer. 'error' covers BOTH
  * "no dossier written yet" and "unknown seat" — the route 404s identically
  * for both (by design, see dossiers.ts) — so this tab renders one honest,
@@ -243,8 +243,7 @@ export function InspectPanel() {
 }
 
 /**
- * Agent Dossiers tab body (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-
- * surface.md). Renders through renderDossierMarkdown — the dossier-mode-
+ * Agent Dossiers tab body. Renders through renderDossierMarkdown — the dossier-mode-
  * hardened pass (external img stripped, rel forced; see lib/markdown.ts),
  * never the plain chat renderMarkdown. Read-only: no edit affordance exists
  * here or anywhere in the dashboard (v1 acceptance freezes it).

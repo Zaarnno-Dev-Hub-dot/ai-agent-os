@@ -1,9 +1,7 @@
 /**
- * Agent Dossiers — dashboard surface v1.1 (Wave 7 stretch, M4,
- * docs/DESIGN-agent-dossiers-surface.md). REST GET, same fetch-helper
+ * Agent Dossiers — dashboard surface v1.1. REST GET, same fetch-helper
  * pattern as lib/memoryGraph.ts / lib/history.ts — no websocket event for
- * this (GET-only, no live-update need per the design doc's "acceptance
- * freezes it").
+ * this.
  */
 
 import { gatewayHttpOrigin } from './gatewayOrigin';
@@ -17,9 +15,7 @@ export interface DossierResponse {
 }
 
 /**
- * Throws on any non-2xx (including 404 — "no dossier for this seat yet" and
- * "unknown seat" are the SAME shape, per the design doc's fail-closed
- * uniformity) so the caller renders one honest empty/error state rather than
+ * Throws on any non-2xx so the caller renders one honest empty/error state rather than
  * silently showing stale or blank content.
  */
 export async function fetchDossier(seatId: string): Promise<DossierResponse> {

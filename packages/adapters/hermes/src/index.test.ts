@@ -3,8 +3,7 @@ import { mapSseToAgentEvents } from './index.js';
 import type { HermesRunSseEvent } from './hermesRuns.js';
 
 /**
- * Regression test for the 2026-07-06 usage-order bug (docs/DESIGN-token-
- * budgets.md, Milestone C item 3): the relay's AgentRelayWorker.handleEvent
+ * Regression test for the 2026-07-06 usage-order bug: the relay's AgentRelayWorker.handleEvent
  * stashes a 'usage' AgentEvent into pendingUsage and only reads it when
  * 'message-complete' fires commitAgentReply — and runOne's finally clears
  * this.current right after settling, so a 'usage' event emitted AFTER

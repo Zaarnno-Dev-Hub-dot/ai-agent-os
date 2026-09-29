@@ -50,13 +50,13 @@ export const codexManifest: AdapterManifest & { source: string } = {
   displayName: 'Codex',
   // AdapterManifest['harness'] is a closed union — 'hermes' | 'claude-code' |
   // 'grok-build' | 'openclaw' | 'homebrew' — and packages/shared is FROZEN
-  // (BUILDER_PROTOCOL rule 7). 'homebrew' is the documented escape hatch for
+  //. 'homebrew' is the documented escape hatch for
   // anything outside the four named harnesses (ollama uses it for the same
   // reason). Consequence to know about: relay.ts's CLI_HARNESSES check keys
   // off this field, so a 'homebrew' seat is treated as attachment-URL-only
   // even though this one genuinely has a filesystem. That is a known
-  // limitation of not being able to widen the union, recorded in
-  // docs/TECH-DEBT.md rather than worked around in the adapter.
+  // limitation of not being able to widen the union, recorded as known tech
+  // debt rather than worked around in the adapter.
   harness: 'homebrew',
   flavor: 'cli-stream',
   avatar: '◎',

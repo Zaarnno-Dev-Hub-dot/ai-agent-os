@@ -23,7 +23,7 @@ function elapsedLabel(startedAt: number, nowMs: number): string {
  * only pushes a fresh state.sync on announce/clear/a-sweep-that-removed-
  * something, never once a second, so a live-feeling counter has to be
  * computed client-side rather than waiting on a new server message.
- * Interval is cleaned up on unmount (return () => clearInterval(...)).
+ * Interval is cleaned up on unmount (return => clearInterval(...)).
  */
 function EphemeralSidebarRow({ entry }: { entry: EphemeralPresence }) {
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -145,7 +145,7 @@ function RoomCreateDialog({ onClose }: { onClose: () => void }) {
 /**
  * Inline create-project dialog under the ROOMS header ("+ project" button).
  * No member picker — projects have no membership/budget defaults their rooms
- * inherit (Milestone E scope decision, docs/DESIGN-PAPERCLIP-ADOPTION.md).
+ * inherit.
  * project.create is a gateway-local extension of the frozen shared
  * ClientEvent union — same cast idiom as room.rollover/room.set-project.
  */
@@ -378,7 +378,7 @@ function RoomRow({
   const sendClientEvent = useStore((s) => s.sendClientEvent);
   const autorouteEnabled = useStore((s) => s.autorouteRooms.has(room.id));
   const currentProjectId = useStore((s) => s.projectAssignments.get(room.id) ?? null);
-  // Voice v1 (docs/DESIGN-voice-v1.md): per-room auto-read toggle. Pure
+  // Voice v1: per-room auto-read toggle. Pure
   // client-side/localStorage state — no wire event, no gateway involvement —
   // hence useVoiceStore rather than sendClientEvent, unlike autoroute above.
   const autoReadEnabled = useVoiceStore((s) => s.autoReadRoomIds.has(room.id));
@@ -460,7 +460,7 @@ function RoomRow({
     setMenuOpen(false);
     setConfirmReset(false);
     // room.rollover is a gateway-local extension of the frozen shared
-    // ClientEvent union (docs/DESIGN-quad-rollover.md) — identical envelope
+    // ClientEvent union — identical envelope
     // shape, typed at the two endpoints instead of packages/shared.
     sendClientEvent({
       type: 'room.rollover',
@@ -840,7 +840,7 @@ function ProjectGroupHeader({
  * rooms are never clickable into a chat view (they're not in the active
  * `rooms` list at all) — Un-archive is the only affordance. Keyed by
  * room.id, never grouped/deduped by name: a documented pre-existing bug
- * (docs/TECH-DEBT.md — same-day double Quad-reset) can produce two archived
+ * can produce two archived
  * rooms with an identical display name and distinct ids, and this is the
  * first UI surface that ever renders that state to a human.
  */
@@ -1007,8 +1007,7 @@ export function Sidebar() {
           })}
           {(() => {
             const unsortedRooms = rooms.filter((r) => !projectAssignments.has(r.id));
-            // Only shown once at least one real project exists (open question
-            // from docs/PHASE3-KICKOFF.md Milestone E, resolved this way).
+            // Only shown once at least one real project exists.
             return (
               <div>
                 <div className="sect">UNSORTED</div>

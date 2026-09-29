@@ -30,8 +30,7 @@ import { composeWindowedOutbound } from './relayWindow.js';
 import { buildPinnedContextBlock, withPinnedContext } from './memory.js';
 
 /**
- * CLI harnesses get a filesystem hand-off (copy into the agent's own
- * workspace, per docs/DESIGN-attachments.md); http/ws harnesses keep the
+ * CLI harnesses get a filesystem hand-off; http/ws harnesses keep the
  * existing url field with no filesystem hand-off.
  */
 const CLI_HARNESSES = new Set(['claude-code', 'grok-build']);
@@ -50,7 +49,7 @@ export interface RoomRelayState {
   /** Turn cap hit — no auto relay to agents until human speaks. */
   paused: boolean;
   /**
-   * Room token-budget state (docs/DESIGN-token-budgets.md). Mirrors the turn
+   * Room token-budget state. Mirrors the turn
    * cap's paused/resume shape but is tracked separately: gateway-local only,
    * not persisted (rebuilt from cost_events at boot — see db.ts
    * recomputeCostTotals). Owned/mutated by budgets.ts; enforcement sites
@@ -76,7 +75,7 @@ export interface RelayDeps {
   broadcast: (event: ServerEvent) => void;
   agentDisplayName: (agentId: string) => string;
   /**
-   * Vault memory layer v1 (docs/DESIGN-memory-read.md), plain dependency-
+   * Vault memory layer v1, plain dependency-
    * injection in the same style as agentDisplayName above — relay.ts has no
    * import of packages/gateway/src/memory.ts, it only shapes these two
    * accessors. Optional so every existing RelayDeps literal in tests keeps
@@ -91,8 +90,7 @@ type PendingJob = {
   outbound: OutboundMessage;
   settle: (ok: boolean, err?: Error) => void;
   /**
-   * B7 (2026-07-09 design, landed 2026-07-21 per TOP-TIER-QUEUE.md's reframe
-   * ruling): the id of the message that CAUSED this delivery (the `source`
+   * B7: the id of the message that CAUSED this delivery (the `source`
    * relayMessageToAgents was called with) — stamped onto the agent's reply
    * as `replyTo` in commitAgentReply below, so a reply always names the
    * specific turn it answers. This is what unblocks bridge.ts's
@@ -275,7 +273,7 @@ class AgentRelayWorker {
       content,
       createdAt: Date.now(),
       verifyBadge: this.trust === 'verify-outputs' ? 'verify-outputs' : 'verified',
-      // B7 (TOP-TIER-QUEUE.md, 2026-07-09 design / 2026-07-21 landed): every
+      // B7: every
       // seat reply names the exact message that triggered it. Lets
       // resolveRelayTargets' pre-existing "Agent: fan-out... or replyTo
       // another agent" branch (dormant since 1117f50 — nothing ever produced
@@ -292,7 +290,7 @@ class AgentRelayWorker {
     this.deps.messages.set(roomId, list);
     this.deps.broadcast({ type: 'message.new', payload: msg });
 
-    // Per-turn token guard (docs/DESIGN-token-budgets.md): breach does NOT
+    // Per-turn token guard: breach does NOT
     // pause the room and does NOT block persistence of this reply — it only
     // suppresses THIS reply's onward agent-agent fan-out, so one agent's
     // blowup can't kill the room. Computed before recordUsage so the fan-out
@@ -457,8 +455,7 @@ function parseMentionsFromContent(deps: RelayDeps, room: Room, content: string):
   const known = new Set(verifiedAgentIdsInRoom(deps, room));
   known.add('everyone');
   const found = new Set<string>();
-  // '#' is included so multi-instance seat ids (docs/DESIGN-multi-instance.md,
-  // e.g. `claude-code#work`) are @-mentionable, not just bare manifestIds.
+  // '#' is included so multi-instance seat ids are @-mentionable, not just bare manifestIds.
   const pattern = /@([a-z0-9_#-]+)/gi;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(content))) {
@@ -555,7 +552,7 @@ export function outboundFromMessage(msg: Message, deps: RelayDeps): OutboundMess
 }
 
 /**
- * Attachment hand-off per docs/DESIGN-attachments.md. Resolves each ref by id
+ * Attachment hand-off. Resolves each ref by id
  * via getAttachment() — server-authoritative; msg.attachments came off a
  * persisted Message, but the on-disk StoredAttachment (diskName) is only
  * available from the index. CLI harnesses (claude-code, grok-build) get a
@@ -615,7 +612,7 @@ export function relayMessageToAgents(
   const outbound = outboundFromMessage(source, deps);
   const targets = resolveRelayTargets(deps, room, source, excludeAgentId);
 
-  // FLAGGED FOR FABLE REVIEW (docs/DESIGN-memory-read.md): pinned-vault-note
+  // FLAGGED FOR FABLE REVIEW: pinned-vault-note
   // prepend, computed once per room here (pins are room-scoped, so this is
   // identical for every target below) and applied to each target's outbound
   // content just before enqueue — the compose choke point both per-target
@@ -634,7 +631,7 @@ export function relayMessageToAgents(
   for (const agentId of targets) {
     const worker = workers.get(agentId);
     if (!worker) continue;
-    // Per-target history shaping (docs/DESIGN-token-budgets.md §3): agents
+    // Per-target history shaping: agents
     // with native session persistence ('resume-session' — claude-code,
     // grok-build via --resume) carry their own memory of earlier turns, so
     // they get the existing single-message outbound unchanged. Agents
@@ -724,8 +721,7 @@ export function onRoomChatMessage(deps: RelayDeps, msg: Message) {
     rs.agentTurnsSinceHuman = 0;
     rs.paused = false;
     // Token-pause resume is intentionally NOT symmetric with the turn-cap
-    // reset above (docs/DESIGN-token-budgets.md: "resume grants +25%
-    // headroom once, then pauses again — no infinite nagging"). See
+    // reset above. See
     // budgets.ts maybeResumeFromTokenPause for the one-time-extension logic.
     maybeResumeFromTokenPause(deps, msg.roomId);
   }

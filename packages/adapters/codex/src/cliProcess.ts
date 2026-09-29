@@ -50,10 +50,7 @@ export interface ModelSpec {
  * from the dash. The gateway's only per-seat mutation verb is
  * `agent.set-model` (index.ts), whose value is checked against
  * gateway/modelVocab.ts and written to transport.model — there is no
- * `agent.set-effort`. Rather than add a new client event (which would mean
- * editing packages/gateway/src/index.ts and the UI store, both of which had
- * uncommitted work from another writer at build time — BUILDER_PROTOCOL rule
- * 6), effort rides IN the model string as a suffix and is split back out
+ * `agent.set-effort`. Rather than add a new client event, effort rides IN the model string as a suffix and is split back out
  * here. The allowlist in modelVocab.ts enumerates the legal
  * model:effort combinations, so the existing server-side vocabulary check
  * covers effort for free and no unvalidated string ever reaches argv.

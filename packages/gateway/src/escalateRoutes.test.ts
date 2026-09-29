@@ -412,7 +412,7 @@ describe('POST /api/escalate', () => {
   });
 
   it('wake template (Wave 8 W8-2): carries the explicit send_message imperative naming the real photon target, not sms', async () => {
-    // Regression for docs/WIP-2026-07-09-wave7-m2-sms-carrier-leg.md: hermes
+    // Regression: hermes
     // twice replied "Acknowledged, standing by" with no send_message call
     // because the wake message itself gave no tool-call imperative. This
     // asserts the fix landed in the wake content hermes's session.send()

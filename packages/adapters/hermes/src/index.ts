@@ -187,10 +187,7 @@ class HermesSession implements AgentSession {
       throw new Error('Hermes session busy — gateway must serialize sends per agent');
     }
 
-    // Rotate to a fresh session id EVERY chat turn (docs/DESIGN-token-
-    // budgets.md §3 root cause: hermes's session_id accumulates the whole
-    // conversation server-side, so tokens-in grows with room length no
-    // matter what the relay sends). A brand-new session per turn means
+    // Rotate to a fresh session id EVERY chat turn. A brand-new session per turn means
     // each turn's server-side context is exactly this turn's prompt — the
     // relay's own history windowing (relayWindow.ts) supplies whatever
     // prior context the agent should see. prove()/health() are untouched:

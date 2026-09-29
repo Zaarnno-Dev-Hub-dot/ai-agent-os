@@ -1,6 +1,5 @@
 /**
- * Server-side model vocabulary allowlist for `agent.set-model` (docs/DESIGN-router.md
- * #3). The UI dropdown is NOT a security boundary (adversarial-review finding,
+ * Server-side model vocabulary allowlist for `agent.set-model`. The UI dropdown is NOT a security boundary (adversarial-review finding,
  * 7/7): a raw WS frame could otherwise inject arbitrary CLI args via the model
  * string, e.g. '--dangerous-flag' becoming a literal child-process flag —
  * index.ts's `agent.set-model` handler checks every requested model against

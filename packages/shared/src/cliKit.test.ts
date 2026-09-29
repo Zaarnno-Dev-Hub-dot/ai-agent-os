@@ -80,7 +80,7 @@ describe('TurnSerializer', () => {
 });
 
 /**
- * Q7 (TOP-TIER-QUEUE.md, blessed 2026-07-14, landed 2026-07-21 alongside B7):
+ * Q7:
  * behavior-preserving extraction of the grace-wait-then-throw busy gate both
  * claude-code's and grok-build's `send()` hand-rolled identically. The
  * acceptance bar is zero behavior change — these pin the exact control flow,

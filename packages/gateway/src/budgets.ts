@@ -1,5 +1,5 @@
 /**
- * Room token budgets (docs/DESIGN-token-budgets.md). Semantics mirror the
+ * Room token budgets. Semantics mirror the
  * existing turn cap (relay.ts commitAgentReply) but track a SEPARATE
  * gateway-local pause flag (RoomRelayState.tokenPaused) — a token pause and a
  * turn-cap pause are independent conditions, both gate relayMessageToAgents.

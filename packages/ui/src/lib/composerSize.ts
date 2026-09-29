@@ -1,6 +1,5 @@
 /**
- * Composer auto-grow + manual resize (docs/TECH-DEBT.md Wave 7 queue,
- * : the textarea auto-expands with content from 1 to ~4
+ * Composer auto-grow + manual resize: the textarea auto-expands with content from 1 to ~4
  * lines, then holds a fixed height with an internal scrollbar. A custom
  * TOP-EDGE drag handle (wired in Composer.tsx) lets the operator manually enlarge
  * it further — the composer is bottom-anchored, so a native bottom-right

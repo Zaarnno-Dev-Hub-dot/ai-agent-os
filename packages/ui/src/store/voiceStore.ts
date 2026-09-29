@@ -50,7 +50,7 @@ export interface VoiceState {
   // ---- Environment.
   /** Mirrors `!document.hidden`, kept live by App.tsx's visibilitychange
    *  listener. Auto-read is gated on this — "when ON and tab visible" per
-   *  the design doc — nothing else in the app depends on it. */
+   *  the original design — nothing else in the app depends on it. */
   tabVisible: boolean;
   /** Set once a SpeechRecognition error reports permission was refused.
    *  Deliberately NOT persisted (localStorage) — "disabled for session"

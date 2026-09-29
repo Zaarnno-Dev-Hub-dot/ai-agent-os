@@ -1,6 +1,6 @@
 /**
  * Helpers shared by CLI-flavor adapters (claude-code, grok-build, future CLI
- * harnesses). Extracted per docs/TECH-DEBT.md P2 "adapter duplication": these
+ * harnesses). Extracted  "adapter duplication": these
  * were copy-pasted per adapter, and the send-serialization pattern in
  * particular has a subtle correctness constraint worth owning in one place.
  */
@@ -77,9 +77,7 @@ export class TurnSerializer {
 /**
  * Behavior-preserving extraction of the busy-wait send gate hand-rolled,
  * byte-for-byte identically, in both claude-code's and grok-build's
- * `send()` (docs/TECH-DEBT.md P2 "adapter duplication"; design BLESSED by
- * Fable 2026-07-14, landed 2026-07-21 alongside B7 per Q7's own ruling —
- * TOP-TIER-QUEUE.md rows Q7/B7).
+ * `send()`.
  *
  * NOT a swap for TurnSerializer above: TurnSerializer resolves `run()` on
  * turn COMPLETION and queues concurrent callers — the right shape for a

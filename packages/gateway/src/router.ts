@@ -1,5 +1,5 @@
 /**
- * The Router (D0) — free-first seat selection. docs/DESIGN-router.md.
+ * The Router (D0) — free-first seat selection..
  *
  * The router picks SEATS, not models: a "model" in this system is a seat with
  * a pinned model, so routing is seat selection among already-connected agent
@@ -9,7 +9,7 @@
  *
  * Config lives at `data/router.json` (gateway-local, created with defaults on
  * boot if absent — see ensureRouterConfig). No packages/shared changes: this
- * module is pure gateway-local state plus the two functions the design doc
+ * module is pure gateway-local state plus the two functions the original design
  * asks for, `classify()` and `pick()`.
  */
 
@@ -83,7 +83,7 @@ export function ensureRouterConfig(dataDir: string): RouterConfig {
 }
 
 /**
- * v1 heuristic classifier (docs/DESIGN-router.md): code fences or
+ * v1 heuristic classifier: code fences or
  * build|fix|implement-shaped requests -> 'code'; long or
  * design|architect|why-shaped requests -> 'hard'; else 'everyday'. Kept as a
  * pure function of the message text so Wave 2 can swap the body for a
@@ -188,7 +188,7 @@ export interface RouterLogEntry {
   candidatesTried: string[];
 }
 
-// Router-log hot path (docs/TECH-DEBT.md): appendRouterLog used to call
+// Router-log hot path: appendRouterLog used to call
 // appendFileSync synchronously on every routed decision, blocking the whole
 // gateway event loop per route. Now it queues an async fs/promises.appendFile
 // per call and chains each write onto the previous one's promise — same

@@ -1,14 +1,11 @@
 /**
- * Gateway-local config: knobs that are NOT part of the shared GatewayConfig
- * (packages/shared is frozen for this build — see docs/DESIGN-token-
- * budgets.md and docs/TECH-DEBT.md for what's deliberately out of scope).
+ * Gateway-local config: knobs that are NOT part of the shared GatewayConfig.
  * Both live here because both are gateway-only defaults with an env override
  * and no per-room client event yet.
  */
 
 /**
- * Single-turn token guard (docs/DESIGN-token-budgets.md item: "catches the
- * hermes blowup"). A breach does not pause the room — it fails just that
+ * Single-turn token guard. A breach does not pause the room — it fails just that
  * turn's onward relay fan-out with a visible error event. 0 disables the
  * check entirely.
  */
@@ -22,7 +19,7 @@ export function maxTokensPerTurn(): number {
 }
 
 /**
- * Relay history window (docs/DESIGN-token-budgets.md §3): last N non-deleted
+ * Relay history window: last N non-deleted
  * room messages re-fed to agents without native session persistence. Older
  * history is dropped from the RELAY prompt only — the UI always shows full
  * history.

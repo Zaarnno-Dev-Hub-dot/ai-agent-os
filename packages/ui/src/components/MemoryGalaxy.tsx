@@ -117,11 +117,9 @@ function tick(nodes: SimNode[], links: SimLink[], alpha: number, width: number, 
 }
 
 /**
- * Studio Dock route app `memory-galaxy` (docs/DESIGN-studio-dock.md §4):
+ * Studio Dock route app `memory-galaxy`:
  * renders the vault's notes + wikilink edges as a star field. Hand-rolled
- * canvas force sim — no new deps (design doc: "fine at ~200 nodes"; the
- * gateway already caps the graph at 500 newest, so this only ever lays out
- * what the API actually returns). Governance exclusions are entirely a
+ * canvas force sim — no new deps. Governance exclusions are entirely a
  * backend concern (memory.ts) — this component just renders whatever
  * `/api/memory/graph` sends.
  */

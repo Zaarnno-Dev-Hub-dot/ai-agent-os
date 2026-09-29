@@ -16,7 +16,7 @@
 
   /* Translucent glass
      recipe shared by the topbar/sidebar/chat column/rails. Fixed rgba(11,13,16,.72)
-     + 14px blur per the design doc; @supports fallback below restores solid
+     + 14px blur per the original design; @supports fallback below restores solid
      --panel on browsers without backdrop-filter. */
   --glass-bg: rgba(11, 13, 16, 0.72);
   --glass-blur: 14px;
@@ -349,8 +349,8 @@ button {
   white-space: nowrap;
 }
 
-/* Attested-tier VERIFIED badge (docs/DESIGN-seat-verification-tiers.md) —
-   amber, distinct at a glance from .vbadge's green full-tier VERIFIED. */
+/* Attested-tier VERIFIED badge —
+   amber, distinct at a glance from.vbadge's green full-tier VERIFIED. */
 .abadge {
   margin-left: auto;
   font-size: 8.5px;
@@ -402,7 +402,7 @@ button {
   border-radius: 6px;
 }
 
-/** Seat model picker (docs/DESIGN-router.md #3) — AgentCard / InspectPanel Model row. */
+/** Seat model picker — AgentCard / InspectPanel Model row. */
 .model-select {
   background: var(--panel2);
   border: 1px solid var(--line);
@@ -1102,8 +1102,7 @@ button {
   flex-shrink: 0;
 }
 
-/* Composer auto-grow + manual resize (docs/TECH-DEBT.md Wave 7 queue,
-   : thin drag strip along the composer's TOP edge — the
+/* Composer auto-grow + manual resize: thin drag strip along the composer's TOP edge — the
    composer is bottom-anchored, so this is the edge that has to move for a
    resize to feel right (see lib/composerSize.ts's doc comment for why a
    bottom-right handle would be wrong here).
@@ -1111,7 +1110,7 @@ button {
    changes from the original 8px-strip-with-hover-only-pill version: (1) the
    grip is visible by DEFAULT now (var(--dim), not the near-invisible
    var(--line)), rendered as a dotted grip pattern rather than a plain bar
-   so it reads as "draggable" at a glance; (2) ::before extends the actual
+   so it reads as "draggable" at a glance; (2)::before extends the actual
    hoverable/grabbable area a further 6px above and below the visible strip
    — pure hit-target slop via absolute positioning, doesn't touch layout
    height/spacing; (3) hover/active brightens to the gold accent, not just
@@ -1187,7 +1186,7 @@ button {
   background: none;
 }
 
-/* Voice v1 dictation (docs/DESIGN-voice-v1.md) — mic button while actively listening. */
+/* Voice v1 dictation — mic button while actively listening. */
 .cbtn.mic-active {
   color: var(--bad);
   background: rgba(248, 81, 73, 0.15);
@@ -1490,7 +1489,7 @@ button {
   padding: 4px 0;
 }
 
-/* Agent Dossiers tab (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-surface.md). */
+/* Agent Dossiers tab (Wave 7 stretch, M4, ). */
 .inspect-dossier {
   flex: 1;
   overflow-y: auto;
@@ -1755,7 +1754,7 @@ button {
 .panel-crash b { color: #f09384; display: block; margin-bottom: 6px; }
 .panel-crash-msg { color: #9aa39e; font-family: Consolas, monospace; font-size: 12px; margin-bottom: 10px; word-break: break-word; }
 
-/* ---------- Memory rail (docs/DESIGN-memory-read.md) ---------- */
+/* ---------- Memory rail ---------- */
 
 .memory-rail {
   width: 340px;
@@ -1928,7 +1927,7 @@ button {
   padding-top: 10px;
 }
 
-/* Pinned-note chips in the room header (docs/DESIGN-memory-read.md). Capped
+/* Pinned-note chips in the room header. Capped
    width + internal scroll so a room with several pins can't push the rest of
    the (non-wrapping, fixed-height) topbar off screen. */
 .pinned-chips {
@@ -2008,7 +2007,7 @@ button {
   padding: 4px 9px 0;
 }
 
-/* ---------- Polls rail (docs/DESIGN-approvals-rail.md) ---------- */
+/* ---------- Polls rail ---------- */
 
 .pill-badge {
   background: var(--accent-gold);
@@ -2252,7 +2251,7 @@ button {
   font-weight: 600;
 }
 
-/* Studio Dock (docs/DESIGN-studio-dock.md) — sidebar section + main-pane mount + Memory Galaxy. */
+/* Studio Dock — sidebar section + main-pane mount + Memory Galaxy. */
 
 .studio-dock {
   border-top: 1px solid var(--line);
@@ -2413,7 +2412,7 @@ button {
   justify-content: center;
 }
 
-/* Approvals Inbox (docs/DESIGN-approvals-app-v2.md) — Studio Dock route app.
+/* Approvals Inbox — Studio Dock route app.
    .studio-dock/.studio-dock-entry/.studio-dock-icon are already styled above
    (Wave 5, registry-driven) — nothing new needed there for this entry. */
 
@@ -2743,7 +2742,7 @@ button {
   gap: 4px;
 }
 
-/* ---------- Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md) ---------- */
+/* ---------- Two-Reviewer Policy (Wave 7 M3, ) ---------- */
 
 .poll-review-confirm {
   display: flex;
@@ -2879,7 +2878,7 @@ button {
 }
 
 /* Verdict color coding — 'unparseable' is deliberately gray/striped and
-   NEVER shares a color with 'approve' (design doc F/B3: never coerced to
+   NEVER shares a color with 'approve' (the original design F/B3: never coerced to
    approve, and must be visually distinct at a glance). */
 .review-chip-approve {
   border-color: rgba(63, 185, 80, 0.4);

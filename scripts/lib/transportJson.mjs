@@ -1,5 +1,5 @@
 /**
- * --transport-json argv parsing (TECH-DEBT 8b45887), extracted out of
+ * --transport-json argv parsing (8b45887), extracted out of
  * connect-agent.mjs so it's importable for testing without also pulling in
  * that script's top-level "connect for real" side effect (same reason
  * connectSeats.mjs itself was split out of connect-agent.mjs originally).

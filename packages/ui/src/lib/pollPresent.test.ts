@@ -303,7 +303,7 @@ describe('pollSettledAt (2026-07-18, mirrors gateway polls.ts byte-for-byte)', (
 });
 
 // ============================================================================
-// Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md)
+// Two-Reviewer Policy
 // ============================================================================
 
 function baseReview(overrides: Partial<PollReview> = {}): PollReview {

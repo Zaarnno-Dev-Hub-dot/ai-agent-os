@@ -119,7 +119,7 @@ describe('loadLanes / lanePartnerOf', () => {
 });
 
 // ============================================================================
-// Selection matrix (design doc "Selection")
+// Selection matrix
 // ============================================================================
 
 function candidate(seatId: string, family: string, attested: boolean): ReviewCandidate {
@@ -324,7 +324,7 @@ describe('selectSubstitute', () => {
 });
 
 // ============================================================================
-// Verdict parsing — adversarial (design doc F/B3)
+// Verdict parsing — adversarial
 // ============================================================================
 
 function fenced(body: string): string {

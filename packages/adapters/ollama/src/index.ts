@@ -124,8 +124,7 @@ class OllamaSession implements AgentSession {
     try {
       if (rawType === 'attested-nonce') {
         const c = challenge as unknown as AttestedNonceChallenge;
-        // The challenge carries the bare nonce VALUE (design doc: "sends it
-        // IN the prompt") — this adapter builds the actual instructional
+        // The challenge carries the bare nonce VALUE — this adapter builds the actual instructional
         // prompt around it, same division of labor as every other adapter's
         // nonce-file challenge (the verifier supplies the raw ingredient;
         // the adapter phrases it for its own harness). Omitting the
@@ -156,7 +155,7 @@ class OllamaSession implements AgentSession {
       }
 
       // nonce-file / capability-probe both assume real tool possession this
-      // bare completions endpoint doesn't have — Policy (design doc): "attested
+      // bare completions endpoint doesn't have — Policy: "attested
       // seats never receive workspace/file tasks." Fail honestly instead of
       // faking a pass; a manifest that somehow requested full-tier challenges
       // against this adapter must see a real failure, not painted status.
@@ -165,7 +164,7 @@ class OllamaSession implements AgentSession {
           challengeId: challenge.challengeId,
           type: challenge.type,
           success: false,
-          error: `${challenge.type} is not supported by attested-tier tool-less seats (docs/DESIGN-seat-verification-tiers.md)`,
+          error: `${challenge.type} is not supported by attested-tier tool-less seats`,
           latencyMs: Date.now() - start,
         };
       }

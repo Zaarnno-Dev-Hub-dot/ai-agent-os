@@ -528,7 +528,7 @@ describe('handlePollDecide', () => {
   });
 });
 
-describe('handlePollDecide humanToken gate (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2)', () => {
+describe('handlePollDecide humanToken gate', () => {
   let h: Harness;
   beforeEach(async () => {
     h = await buildHarness();

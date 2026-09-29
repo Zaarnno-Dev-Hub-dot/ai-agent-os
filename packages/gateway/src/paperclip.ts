@@ -1,14 +1,12 @@
 /**
- * Paperclip bridge-in poller (Wave 4, docs/DESIGN-approvals-rail.md §4).
+ * Paperclip bridge-in poller.
  * Motivating incident: a Paperclip hire approval the operator could not find in
  * Paperclip's own inbox while living in this dashboard (2026-07-07). This
  * module polls `GET /api/companies/:cid/approvals?status=pending` for every
  * company listed in `data/paperclip.json` and turns each NEW approval into a
- * poll card in a find-or-create "Approvals" room (human-only membership — no
- * agent members, per the design doc).
+ * poll card in a find-or-create "Approvals" room.
  *
- * Isolation contract (design doc: "poller failures log-once and never affect
- * the gateway, same as router-log's fail-once"): every network call is
+ * Isolation contract: every network call is
  * wrapped so a down/unreachable Paperclip NEVER throws into the interval
  * timer or takes the gateway down. Unlike router-log's PERMANENT latch,
  * this poller retries every tick by design (Paperclip coming back up must
@@ -150,10 +148,10 @@ export async function postApprovalDecision(
   }
 }
 
-/** `Approvals` — the exact, reused-by-name human-only room the poller finds-or-creates (design doc §4). Mirrors bridge.ts's paperclipRoomName precedent. */
+/** `Approvals` — the exact, reused-by-name human-only room the poller finds-or-creates. Mirrors bridge.ts's paperclipRoomName precedent. */
 export const APPROVALS_ROOM_NAME = 'Approvals';
 
-/** requestedBy value stamped on every poller-created poll — never a real seat id, so the requester-notify branch (bridge.ts mechanics) never fires for these; the notify path for source='paperclip' polls is the approve/reject POST-back instead (design doc §3c). */
+/** requestedBy value stamped on every poller-created poll — never a real seat id, so the requester-notify branch (bridge.ts mechanics) never fires for these; the notify path for source='paperclip' polls is the approve/reject POST-back instead. */
 export const PAPERCLIP_REQUESTER = 'paperclip';
 
 const APPROVAL_TYPE_LABELS: Record<string, string> = {
@@ -178,7 +176,7 @@ export function pollInputForApproval(approval: PaperclipApproval, roomId: string
     question: titleForApproval(approval),
     options: [{ label: 'Approve' }, { label: 'Reject' }],
     requestedBy: PAPERCLIP_REQUESTER,
-    // No recommendation, no expiry — the design doc lists these as "none" for v1 bridge-in.
+    // No recommendation, no expiry — the original design lists these as "none" for v1 bridge-in.
     source: 'paperclip',
     externalRef: { approvalId: approval.id, companyId: approval.companyId },
   };

@@ -1,7 +1,5 @@
 /**
- * Wave 8 W8-3 item 1 — burst guard for persistRoomMutation
- * (docs/TECH-DEBT.md "Gateway has no backpressure/batching on bulk
- * room.archive and goes unresponsive under a synchronous burst").
+ * Wave 8 W8-3 item 1 — burst guard for persistRoomMutation.
  *
  * ROOT CAUSE (confirmed by reading index.ts's persistRoomMutation, not
  * guessed): every single room mutation — room.create, room.rename,

@@ -117,8 +117,7 @@ const DISK_NAME_ID_RE =
  * POST /api/files but never sent in a chat message (upload-then-cancel) has
  * no message to rehydrate from and stayed unreachable via GET /api/files/:id
  * for the rest of the process's life even though the bytes were still on
- * disk (docs/TECH-DEBT.md P2 "Orphaned uploads survive on disk but vanish
- * from the index on restart"). Call AFTER reindexAttachmentsFromMessages on
+ * disk. Call AFTER reindexAttachmentsFromMessages on
  * boot so message-linked attachments keep their real recorded
  * filename/mimeType; this only fills in ids still missing from the index.
  * mimeType is unrecoverable from disk alone, so orphans get a conservative
@@ -167,7 +166,7 @@ export function reindexAttachmentsFromDisk(dataDir: string): number {
 }
 
 /**
- * Per docs/DESIGN-attachments.md: CLI-flavor agents get a filesystem hand-off,
+ *: CLI-flavor agents get a filesystem hand-off,
  * but never a path into the shared files store or another agent's workspace.
  * Copy the stored file into <dataDir>/workspaces/<agentId>/attachments/ and
  * hand out the ABSOLUTE PATH OF THE COPY. Returns undefined on any failure

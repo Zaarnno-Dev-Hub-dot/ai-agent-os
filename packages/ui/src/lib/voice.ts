@@ -1,5 +1,5 @@
 /**
- * Voice v1 (docs/DESIGN-voice-v1.md) — browser-native TTS/dictation helpers.
+ * Voice v1 — browser-native TTS/dictation helpers.
  * Zero deps, zero server changes: everything here talks directly to the
  * browser's speechSynthesis / SpeechRecognition globals (feature-detected —
  * both are commonly absent: SpeechRecognition is Chromium-only/webkit-
@@ -111,7 +111,7 @@ export function createUtterance(text: string, prefs: VoicePrefs): SpeechSynthesi
 export const MAX_AUTO_READ_QUEUE_DEPTH = 3;
 
 /** Appends `item`, dropping the OLDEST entries once over `maxDepth` — "drop
- *  queue >3 deep (never backlog)" (docs/DESIGN-voice-v1.md): auto-read stays
+ *  queue >3 deep (never backlog)": auto-read stays
  *  roughly caught-up to the live conversation instead of accumulating an
  *  ever-growing backlog of things to read aloud. */
 export function pushBounded<T>(queue: T[], item: T, maxDepth: number): T[] {

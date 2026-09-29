@@ -239,8 +239,7 @@ function isAllowedBrowserOrigin(origin: string | undefined | null): boolean {
 const db: SqlDatabase = await openDatabase(config.dataDir);
 
 /**
- * Two-Reviewer Policy ledger tables (Wave 7 M3, docs/DESIGN-two-reviewer-
- * policy.md "Ledger"). `DB_SCHEMA` (packages/shared) is frozen — poll_reviews
+ * Two-Reviewer Policy ledger tables. `DB_SCHEMA` (packages/shared) is frozen — poll_reviews
  * + poll_review_findings are applied as a SEPARATE, gateway-local DDL pass
  * right after the base schema, same idempotent-per-statement contract as
  * db.ts's own applySchema.
@@ -258,7 +257,7 @@ applyPollReviewsSchema(db);
 applyMessageIndexes(db);
 
 /**
- * humanToken (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2): minted once
+ * humanToken: minted once
  * per gateway process, delivered ONLY via the served index.html (see
  * servedIndexHtml() below) — never over a fetchable /api/* route. Required
  * by poll.decide / agent.disconnect / the review_policy toggle route. See
@@ -286,7 +285,7 @@ const globalCost: CostReport = {
 };
 
 /**
- * The Router (D0, docs/DESIGN-router.md): gateway-local state layered beside
+ * The Router: gateway-local state layered beside
  * the frozen shared types, same pattern as room.rollover above.
  *
  * liveConfigs holds the EXACT AdapterConfig object reference handed to
@@ -304,7 +303,7 @@ const liveConfigs = new Map<string, AdapterConfig>();
 let savedAgents: SavedAgent[] = loadSavedAgents(config.dataDir);
 
 /**
- * Room autoroute toggle state (docs/DESIGN-router.md #2). Room has no field
+ * Room autoroute toggle state. Room has no field
  * for this (packages/shared is frozen) — persisted gateway-locally, same
  * shape-of-problem as router.json. Default OFF for every room, including a
  * freshly rolled-over Quad (spec: "Default OFF (the Lobby stays explicit)").
@@ -337,7 +336,7 @@ let projectsState: ProjectsState = loadProjects(config.dataDir);
 const routerConfig: RouterConfig = ensureRouterConfig(config.dataDir);
 
 /**
- * Loop-lite (Wave 2, docs/HANDOFF-2026-07-07-wave1.md): `data/loops.json`,
+ * Loop-lite: `data/loops.json`,
  * created with `{}` on boot if absent (ensureLoopsConfig) — same gateway-
  * local-config idiom as router.json above. Keyed by roomId; at most one
  * ACTIVE loop per room (enforced by loop.ts's startLoop).
@@ -345,7 +344,7 @@ const routerConfig: RouterConfig = ensureRouterConfig(config.dataDir);
 const loopsConfig: LoopsConfig = ensureLoopsConfig(config.dataDir);
 
 /**
- * Paperclip bridge wake (F2a, docs/DESIGN-paperclip-agentos-adapter.md §4.5):
+ * Paperclip bridge wake:
  * process-lifetime-only state (see bridge.ts doc comments) — an in-memory
  * idempotency store and a registry of in-flight long-poll waits, both reset
  * on every gateway restart, same as busySeats/roomRelay before boot
@@ -355,7 +354,7 @@ const bridgeIdempotency = new BridgeIdempotencyStore();
 const bridgeWaits = new BridgeWaitRegistry();
 
 /**
- * Polls/Approvals rail (Wave 4, docs/DESIGN-approvals-rail.md): `data/polls.json`,
+ * Polls/Approvals rail: `data/polls.json`,
  * load-at-boot/save-on-mutation — same gateway-local-config idiom as
  * projects.json/autoroute.json above. Reassigned (not mutated in place) on
  * every change, same atomicity as every other `let ...State` in this file.
@@ -363,8 +362,7 @@ const bridgeWaits = new BridgeWaitRegistry();
 let pollsState: PollsState = loadPolls(config.dataDir);
 
 /**
- * Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md
- * "Config"): `data/review-policy.json`, same load-at-boot/save-on-mutation
+ * Two-Reviewer Policy: `data/review-policy.json`, same load-at-boot/save-on-mutation
  * idiom as router.json/loops.json above. Default `mutations`. `tracker`
  * bundles the feature's only additional mutable bookkeeping (pending-wait
  * cancel functions + the per-poll card-deadline timer) — process-lifetime
@@ -436,9 +434,8 @@ for (const room of loadRooms(db)) {
 }
 
 /**
- * Vault memory layer v1 (docs/DESIGN-memory-read.md): boot index + 60s
- * re-index timer, and per-room pin persistence (gateway-local JSON, separate
- * from the SQLite store — the design doc calls for a flat file here). The
+ * Vault memory layer v1: boot index + 60s
+ * re-index timer, and per-room pin persistence. The
  * gateway only ever READS from the vault via MemoryIndex (readFileSync/
  * statSync/readdirSync) — never writes.
  */
@@ -447,7 +444,7 @@ memoryIndex.start();
 let memoryPins: MemoryPins = loadPins(config.dataDir);
 
 /**
- * Studio Dock registry (docs/DESIGN-studio-dock.md §2): `data/dock-apps.json`
+ * Studio Dock registry: `data/dock-apps.json`
  * loaded once at boot — no editor UI in v1, the json file IS the interface, a
  * gateway restart picks up edits. loadDockApps() already drops malformed or
  * non-loopback entries (logged); see dockApps.ts.
@@ -455,7 +452,7 @@ let memoryPins: MemoryPins = loadPins(config.dataDir);
 const dockApps = loadDockApps(config.dataDir);
 
 /**
- * Boot rehydration (docs/DESIGN-token-budgets.md): room token tallies,
+ * Boot rehydration: room token tallies,
  * room.costTracker, and globalCost.byAgent are all in-memory-only — recompute
  * them from the append-only cost_events log so budgets and cost meters
  * survive a gateway restart. Runs once here, before the WS server accepts any
@@ -511,7 +508,7 @@ if (rooms.size === 0) {
  * the Lobby is the protected default room: rename/archive are rejected for it.
  * It is identified by the row the gateway itself creates — the oldest ACTIVE
  * room named 'Lobby' (loadRooms orders by created_at) — never by client
- * input. Rebindable (`let`): daily rollover (docs/DESIGN-quad-rollover.md)
+ * input. Rebindable (`let`): daily rollover
  * archives the current Quad under a dated name and rebinds this to the fresh
  * room, so protection and defaultActiveRoomId follow the NEW Quad. The name
  * 'Lobby' is reserved (validRoomName), so the active-room-by-name lookup
@@ -541,7 +538,7 @@ function quadIsStale(): boolean {
 }
 
 /**
- * Quad daily rollover (docs/DESIGN-quad-rollover.md): archive the current
+ * Quad daily rollover: archive the current
  * Quad as `Quad — YYYY-MM-DD` (local date of its LAST message — a Monday
  * rollover of Friday's chatter labels it Friday), start a fresh 'Lobby'
  * with the same members and turn cap, and rebind quadRoomId so protection
@@ -608,8 +605,7 @@ function buildStateSync(): ServerEvent {
     // resolves any per-seat override once, at connect time — see
     // agents.ts's resolveAgentSource/manifestSource).
     const withSource = { ...summary, source: manifestSource(s.manifest) };
-    // Last-reply surfacing (2026-07-28, router-side last-reply surfacing,
-    // docs/DESIGN-router.md): ISO timestamp of this seat's last successful
+    // Last-reply surfacing: ISO timestamp of this seat's last successful
     // room message, written by broadcast()'s message.new handler above.
     // AgentSummary has no field for this (packages/shared frozen) — same
     // additive-key cast idiom as `source` just above. Undefined (omitted
@@ -617,11 +613,11 @@ function buildStateSync(): ServerEvent {
     // current connection has never produced a room message — tools/tiles
     // read absence as "no reply yet this connection", not "unknown".
     const withReply = { ...withSource, lastReplyAt: seatLastReplyAt(s) };
-    // Verification-tier badge (docs/DESIGN-seat-verification-tiers.md):
+    // Verification-tier badge:
     // AgentSummary has no field for this (packages/shared frozen) — additive
     // per-agent key, same cast idiom as the payload-level additive fields
     // below (polls/projects/dockApps). "Status vocabulary unchanged" per the
-    // design doc — status stays VERIFIED; this is purely a display hint the
+    // the original design — status stays VERIFIED; this is purely a display hint the
     // UI uses to render ATTESTED instead of VERIFIED for these seats.
     return isAttestedManifest(s.manifest) ? { ...withReply, verificationBadge: 'ATTESTED' } : withReply;
   });
@@ -656,7 +652,7 @@ function buildStateSync(): ServerEvent {
       // either, so the whole return value stays cast at the two endpoints
       // that read it (here and gatewayStore.ts's state.sync case).
       polls: pollsForStateSync(pollsState),
-      // Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md):
+      // Two-Reviewer Policy:
       // review rows for exactly the polls above (open + last 20 settled —
       // pollReviewsForStateSync reuses pollsForStateSync's own windowing) +
       // the current policy mode, same additive-field cast idiom as polls
@@ -664,13 +660,12 @@ function buildStateSync(): ServerEvent {
       // same two endpoints (here and gatewayStore.ts's state.sync case).
       pollReviews: pollReviewsForStateSync(db, pollsState),
       reviewPolicy: reviewPolicyState,
-      // Studio Dock registry (docs/DESIGN-studio-dock.md §2): static per-boot
+      // Studio Dock registry: static per-boot
       // list, same additive-field cast idiom as polls/projects above. No
       // dedicated ServerEvent field (shared frozen); read at the same two
       // endpoints.
       dockApps,
-      // Agent Dossiers (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-
-      // surface.md): "dossiersDir config unset (default) = feature hidden
+      // Agent Dossiers: "dossiersDir config unset (default) = feature hidden
       // entirely" — a boolean flag, not the path itself (the dossiers
       // directory location is a server-local filesystem detail with no
       // reason to reach the client), so InspectPanel can skip rendering the
@@ -787,7 +782,7 @@ function handleLoopTurn(roomId: string, msg: Message): void {
 }
 
 function broadcast(event: ServerEvent) {
-  // Router busy-tracking (docs/DESIGN-router.md): a message.new authored by a
+  // Router busy-tracking: a message.new authored by a
   // known agent is that agent's turn completing — relay.ts's commitAgentReply
   // is the only place this fires, and it fires exactly once per turn, so this
   // is a lossless clear point for the busySeats markBusy above set at enqueue
@@ -847,7 +842,7 @@ const relayDeps: RelayDeps = {
   globalCost,
   broadcast,
   agentDisplayName: (agentId) => agents.get(agentId)?.manifest.displayName ?? agentId,
-  // Vault memory layer v1 (docs/DESIGN-memory-read.md) pinned-context wiring
+  // Vault memory layer v1 pinned-context wiring
   // for relay.ts's compose-layer prepend (see relayMessageToAgents' FLAGGED
   // comment). `memoryPins` is reassigned (not mutated) on every pin/unpin —
   // these closures read the module-scoped `let` binding, so they always see
@@ -856,7 +851,7 @@ const relayDeps: RelayDeps = {
   getPinnedNote: (path) => memoryIndex.get(path),
 };
 
-// Auto-rollover at boot (docs/DESIGN-quad-rollover.md): a Quad whose newest
+// Auto-rollover at boot: a Quad whose newest
 // message is from a previous local day is yesterday's daily — roll it now,
 // before the WS server accepts any client, so the first state.sync already
 // shows the fresh Quad. (broadcast is a no-op here: no clients yet.)
@@ -887,7 +882,7 @@ function postSystemLine(roomId: string, content: string): void {
 }
 
 /**
- * Two-Reviewer Policy wiring (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md):
+ * Two-Reviewer Policy wiring:
  * the SAME live maps/closures every other route/handler in this file reads,
  * threaded explicitly (pollReviews.ts precedent: bridge.ts/pollsRoutes.ts).
  * Reuses `bridgeWaits` — the SAME BridgeWaitRegistry instance bridge.ts's own
@@ -918,7 +913,7 @@ const pollReviewsCtx: PollReviewRouteContext = {
 };
 
 /**
- * Polls/Approvals rail wiring (Wave 4, docs/DESIGN-approvals-rail.md §3-§4):
+ * Polls/Approvals rail wiring:
  * decide/create/settle/sweep logic lives in pollsRoutes.ts (pure/testable
  * against a fake context, same split as bridge.ts) — this context object is
  * the SAME live maps/closures every other route/handler in this file reads,
@@ -954,7 +949,7 @@ sweepAndSettlePolls(pollsRouteCtx); // boot rehydrate — a poll that expired wh
 setInterval(() => sweepAndSettlePolls(pollsRouteCtx), 30_000);
 
 /**
- * Paperclip bridge-in poller (design doc §4): 60s interval over every
+ * Paperclip bridge-in poller: 60s interval over every
  * configured company, isolated per paperclip.ts's own doc comments — a
  * down/unreachable Paperclip must never affect the gateway (verified by the
  * paperclip.test.ts isolation test). find-or-create the human-only
@@ -997,17 +992,15 @@ function runPaperclipPollTick(): void {
     onPollCreated: (poll) => broadcastPollUpdated(pollsRouteCtx, poll),
   }).then(() => broadcast(buildStateSync()));
 }
-runPaperclipPollTick(); // boot rehydrate — first sync doesn't wait a full 60s.
-setInterval(runPaperclipPollTick, 60_000);
 
 /**
- * The Router (D0, docs/DESIGN-router.md, surfaces #1 and #2). Called from the
+ * The Router. Called from the
  * chat.send handler BEFORE relayMessageToAgents(...) is reached — router.ts's
  * classify()/pick() decide, this function carries out the decision using
  * relay.ts's OWN exported, unmodified relayMessageToAgents (targeted via a
  * mentions-patched clone of `msg`, never relay.ts internals).
  *
- * Two independent triggers, per the design doc:
+ * Two independent triggers, per the original design:
  *   1. `@router <msg>` anywhere in the content — always routes, in any room,
  *      regardless of autoroute. "router is one more alias target."
  *   2. Room autoroute is ON and the message is otherwise UN-ADDRESSED (the
@@ -1072,7 +1065,7 @@ function routeAndRelay(ws: WebSocket, room: Room, msg: Message, normalTargets: s
 }
 
 /**
- * Room-name rule per docs/DESIGN-rooms.md: trimmed, 1..60 chars. Returns the
+ * Room-name rule: trimmed, 1..60 chars. Returns the
  * trimmed name, or null after broadcasting an error. Payloads come off the
  * wire, so the runtime type is checked too — never trust the client.
  */
@@ -1107,8 +1100,7 @@ function sanitizeMemberIds(raw: unknown): string[] {
  * state.sync. The expensive parts (full-DB disk write, full-state
  * broadcast) are coalesced across any calls that land in the same
  * event-loop turn — see roomPersistBatch.ts's header comment for the full
- * root-cause writeup (W8-3 item 1, docs/TECH-DEBT.md "bulk room.archive"
- * burst crash). `rooms.set`/`saveRoom` stay synchronous on every call, so
+ * root-cause writeup. `rooms.set`/`saveRoom` stay synchronous on every call, so
  * this is not a correctness-visible change for a single mutation — only a
  * burst of them.
  */
@@ -1121,6 +1113,11 @@ function persistRoomMutation(room: Room) {
   saveRoom(db, room);
   triggerRoomPersist();
 }
+
+// Start the Paperclip poll only now: its room heal calls persistRoomMutation,
+// which needs triggerRoomPersist (a const defined just above) to be initialized.
+runPaperclipPollTick(); // boot rehydrate — first sync doesn't wait a full 60s.
+setInterval(runPaperclipPollTick, 60_000);
 
 interface ConnectSeatRequest {
   manifestId: string;
@@ -1200,8 +1197,8 @@ async function reconnectSavedAgents(): Promise<WakeOutcome[]> {
 }
 
 async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
-  // room.rollover (docs/DESIGN-quad-rollover.md) is handled before the switch:
-  // packages/shared is frozen (BUILDER_PROTOCOL rule 7), so this event is typed
+  // room.rollover is handled before the switch:
+  // packages/shared is frozen, so this event is typed
   // at its two endpoints (here and the UI sender) instead of the shared
   // ClientEvent union — identical wire shape, and server-validated to the
   // CURRENT Quad only, so a forged/stale roomId can never roll another room.
@@ -1216,7 +1213,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
     }
     return;
   }
-  // poll.decide (Wave 4, docs/DESIGN-approvals-rail.md §3) is handled before
+  // poll.decide is handled before
   // the switch too — packages/shared is frozen, so this is typed identically
   // at the two endpoints (here and the UI sender) instead of extending
   // ClientEvent, same idiom as room.rollover above.
@@ -1231,7 +1228,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       roomError(ws, 'poll.decide', 'poll.decide requires pollId and optionId (strings).');
       return;
     }
-    // Human-seats-only (design doc spec): every connection accepted by THIS
+    // Human-seats-only: every connection accepted by THIS
     // WebSocketServer IS a human browser tab — agents in this gateway
     // connect via their own adapter.connect() sessions (agents.ts) and never
     // hold an entry in `clients`, so there is no "agent connection" among
@@ -1239,7 +1236,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
     // doc's own fallback instruction, rather than adding a check against a
     // distinction this codebase's architecture does not have.
     //
-    // humanToken (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2): the
+    // humanToken: the
     // REAL gate — a raw non-browser WS client that merely passes the Origin
     // check above is not, by itself, evidence of a human hand on the mouse.
     // handlePollDecide checks payload.humanToken against the boot-minted
@@ -1252,8 +1249,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
     }
     return;
   }
-  // poll.defer / poll.info-requested (Wave 6, docs/DESIGN-approvals-app-v2.md
-  // corrections #2/#3) — same endpoint-typed-cast idiom as poll.decide/
+  // poll.defer / poll.info-requested — same endpoint-typed-cast idiom as poll.decide/
   // room.rollover above (packages/shared frozen; two-endpoint precedent is
   // here + the UI sender). Both are human-seats-only for the same reason
   // poll.decide is: every connection this WebSocketServer accepts IS a human
@@ -1392,7 +1388,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       return;
     }
   }
-  // loop.start / loop.stop (Wave 2, docs/HANDOFF-2026-07-07-wave1.md) are
+  // loop.start / loop.stop are
   // handled before the switch too — same reason as room.rollover above:
   // packages/shared is frozen, so these are typed identically at the two
   // endpoints (here and the UI sender) instead of extending ClientEvent.
@@ -1498,7 +1494,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       list.push(msg);
       messages.set(roomId, list);
       broadcast({ type: 'message.new', payload: msg });
-      // ROUTER WIRING (docs/DESIGN-router.md — flagged per builder rules):
+      // ROUTER WIRING:
       // @router alias resolution happens BEFORE relay targeting, same spot
       // relay.ts's own mention-gating would otherwise be the only resolver.
       // routeAndRelay reads what the NORMAL fan-out would have delivered to
@@ -1593,7 +1589,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
     case 'room.create': {
       const name = validRoomName(ws, 'room.create', envelope.payload.name);
       if (!name) break;
-      // Milestone A creates group rooms only (docs/DESIGN-rooms.md) — the
+      // Milestone A creates group rooms only — the
       // client-declared type is not trusted.
       const room: Room = {
         id: randomUUID(),
@@ -1611,8 +1607,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       // broadcast-after-persist convention as room.set-budget's room.updated
       // below. Without this, any client/script waiting on room.created to
       // learn the new room's id hangs forever — exactly what caused a live
-      // incident (retry-on-timeout loop -> 5,721 duplicate rooms; see
-      // docs/TECH-DEBT.md "room.create never emits room.created").
+      // incident.
       broadcast(buildRoomCreatedEvent(room));
       break;
     }
@@ -1703,7 +1698,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       break;
     }
     case 'room.autoroute': {
-      // docs/DESIGN-router.md #2 — gateway-local toggle (Room has no field
+      //  — gateway-local toggle (Room has no field
       // for this; packages/shared is frozen). Persisted to data/autoroute.json
       // so the setting survives a restart, same as every other room setting.
       const { roomId, enabled } = envelope.payload;
@@ -1751,7 +1746,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       break;
     }
     case 'agent.disconnect': {
-      // Graceful teardown of a live seat (docs/DESIGN-multi-instance.md). This
+      // Graceful teardown of a live seat. This
       // is the ONLY clean, programmatic way to stop a one-off/throwaway seat:
       // nothing polls health to reap a seat whose adapter process merely died,
       // so an abandoned seat would otherwise stay VERIFIED forever. Unlike
@@ -1761,7 +1756,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       // flips status to OFFLINE; broadcast the same agent.status + state.sync
       // pair every other lifecycle transition (agent.connect) already sends.
       const { agentId } = envelope.payload;
-      // humanToken (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2):
+      // humanToken:
       // agent.disconnect's payload shape is frozen at `{ agentId: string }`
       // (packages/shared) — the token rides along as an ADDITIVE field on
       // the same wire object, read via a permissive cast at this one
@@ -1798,7 +1793,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
         break;
       }
       liveConfigs.delete(agentId);
-      // Two-Reviewer Policy (Wave 7 M3, design doc F5): a reviewer seat
+      // Two-Reviewer Policy: a reviewer seat
       // disconnecting mid-review times its pending review(s) out immediately
       // and logs it — never re-selects (see pollReviews.ts's
       // onSeatDisconnected doc comment for why this is deliberately NOT the
@@ -1812,7 +1807,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
       break;
     }
     case 'agent.set-model': {
-      // docs/DESIGN-router.md #3. Only seats whose adapter reads
+      //  Only seats whose adapter reads
       // transport.model support this (claude-code, grok-build — manifest
       // cliCommand is the same signal the UI's model picker gates on).
       // hermes/openclaw have no writable model field: rather than silently
@@ -1876,7 +1871,7 @@ async function handleClientEvent(ws: WebSocket, envelope: ClientEnvelope) {
     }
     case 'memory.get': {
       const rawPath = envelope.payload?.path;
-      // SECURITY: path traversal guard (docs/DESIGN-memory-read.md). resolveVaultPath
+      // SECURITY: path traversal guard. resolveVaultPath
       // is the ONLY thing standing between a client-supplied string and an
       // arbitrary filesystem read — reject anything it can't prove stays inside
       // the vault root, and reject BEFORE ever asking the index for the note
@@ -1975,7 +1970,7 @@ await fastify.register(fastifyStatic, {
 });
 
 /**
- * humanToken delivery (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2):
+ * humanToken delivery:
  * "injects it into the served index.html only". An explicit `GET /` handler
  * registered on the SAME Fastify instance takes precedence over
  * @fastify/static's wildcard file-serving for an EXACT `/` request
@@ -1984,7 +1979,7 @@ await fastify.register(fastifyStatic, {
  * every other asset (JS/CSS/images) still serves untouched via the plugin
  * above; only the top-level page gets the injected `<script>`. Cached after
  * the first read (index.html is a boot-time build artifact, never rewritten
- * while the gateway runs). Honest limit stated in the design doc: this is
+ * while the gateway runs). Honest limit stated in the original design: this is
  * NOT a route that hides the token from a determined local script — a
  * `curl http://127.0.0.1:4110/` reads it right out of the HTML just like a
  * browser would. It only means a caller has to know to look here, rather
@@ -2025,7 +2020,7 @@ fastify.get('/api/state', async () => {
 });
 
 /**
- * Memory Galaxy (docs/DESIGN-studio-dock.md §4): the Wave-1 vault index
+ * Memory Galaxy: the Wave-1 vault index
  * (memory.ts) already applies every governance exclusion at index time — an
  * excluded/PII note is never in `this.notes`, so it can never be a node OR a
  * resolved link target here. REST, loopback trust model — same convention as
@@ -2093,8 +2088,7 @@ for (const list of messages.values()) {
 // Then sweep <dataDir>/files for uploads that were never sent in a message
 // (upload-then-cancel) — the message-based pass above can't see those, so
 // they'd otherwise stay unreachable via GET /api/files/:id for this boot's
-// entire life even though the bytes are still on disk (docs/TECH-DEBT.md P2
-// "Orphaned uploads survive on disk but vanish from the index on restart").
+// entire life even though the bytes are still on disk.
 const orphanedAttachmentsReindexed = reindexAttachmentsFromDisk(config.dataDir);
 if (orphanedAttachmentsReindexed > 0) {
   console.log(
@@ -2149,7 +2143,7 @@ fastify.get<{ Params: { id: string } }>('/api/files/:id', async (req, reply) => 
 });
 
 /**
- * Paperclip bridge wake (F2a, docs/DESIGN-paperclip-agentos-adapter.md §4.5):
+ * Paperclip bridge wake:
  * "post as seat + await that seat's next turn" gateway seam. REST, not WS —
  * loopback-only per the existing convention (the gateway binds 127.0.0.1 and
  * trusts local callers; this endpoint invents no new auth system, matching
@@ -2175,7 +2169,7 @@ registerBridgeRoute(fastify, {
 });
 
 /**
- * POST /api/polls (Wave 4, docs/DESIGN-approvals-rail.md §3 "Create"). REST,
+ * POST /api/polls. REST,
  * loopback trust model — same convention as POST /api/bridge/wake. Route +
  * validation logic live in pollsRoutes.ts (pure/testable, same split as
  * bridge.ts). Agents, scripts, and — indirectly, via polls.ts's createPoll
@@ -2184,7 +2178,7 @@ registerBridgeRoute(fastify, {
 registerPollsRoute(fastify, pollsRouteCtx);
 
 /**
- * POST /api/escalate (Wave 6, docs/DESIGN-urgent-sms-escalation.md). REST,
+ * POST /api/escalate. REST,
  * loopback trust model — same convention as POST /api/bridge/wake and POST
  * /api/polls above. Route + guard/decision logic live in escalateRoutes.ts
  * (pure/testable, same split as bridge.ts/pollsRoutes.ts) — reuses the SAME
@@ -2219,8 +2213,7 @@ registerFleetWakeRoute(fastify, {
 });
 
 /**
- * POST /api/workshop/propose (Wave 6, docs/DESIGN-workshop-flow.md
- * "Propose"). REST, loopback trust model — same convention as POST
+ * POST /api/workshop/propose. REST, loopback trust model — same convention as POST
  * /api/polls above. Route + validation logic live in workshopRoutes.ts
  * (pure/testable, same split as pollsRoutes.ts); the git-apply half runs
  * from pollsRoutes.ts's notifyPollSettled on a decided, approved,
@@ -2242,8 +2235,7 @@ const workshopRouteCtx: WorkshopRouteContext = {
   postSystemLine,
   persistRoomMutation,
   // Two-Reviewer Policy (Wave 7 M3): workshop propose is today's ONLY
-  // 'workshop-propose'-covered action (design doc "Config": "mutations:
-  // workshop proposes — today's only agent code/state path"). Fire-and-
+  // 'workshop-propose'-covered action. Fire-and-
   // forget — see startPollReview's own doc comment for the fail-open
   // contract this must never violate.
   onPollProposed: (poll) => startPollReview(pollReviewsCtx, pollReviewTracker, poll, 'workshop-propose'),
@@ -2251,7 +2243,7 @@ const workshopRouteCtx: WorkshopRouteContext = {
 registerWorkshopRoute(fastify, workshopRouteCtx);
 
 /**
- * Two-Reviewer Policy routes (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md):
+ * Two-Reviewer Policy routes:
  * GET/POST /api/review-policy (the POST is humanToken-gated — see
  * pollReviews.ts's registerPollReviewRoutes), the per-finding valid/invalid
  * toggle, the digest, and a reviews-by-poll read. Route + decision logic
@@ -2261,8 +2253,7 @@ registerWorkshopRoute(fastify, workshopRouteCtx);
 registerPollReviewRoutes(fastify, pollReviewsCtx);
 
 /**
- * GET /api/dossiers/:seatId (Wave 7 stretch, M4, docs/DESIGN-agent-dossiers-
- * surface.md). REST, loopback trust model, same convention as every other
+ * GET /api/dossiers/:seatId. REST, loopback trust model, same convention as every other
  * /api/* route — registered unconditionally; the route itself 404s on every
  * request when dossiersDir is unset (see dossiersRoutes.ts's doc comment for
  * why that is indistinguishable from "no such route" to a caller). Roster
@@ -2307,7 +2298,7 @@ fastify.server.on('upgrade', (request, socket, head) => {
 wss.on('connection', (ws) => {
   clients.add(ws);
   sendEnvelope(ws, buildStateSync());
-  // Room autoroute hydration (docs/DESIGN-router.md #2): state.sync's Room
+  // Room autoroute hydration: state.sync's Room
   // shape has no field for this (packages/shared is frozen), so a fresh
   // connect/reconnect self-heals via one room.autoroute.status per
   // currently-autorouted room — same self-healing spirit as state.sync
@@ -2333,8 +2324,7 @@ wss.on('connection', (ws) => {
       },
     } as unknown as ServerEvent);
   }
-  // Per-agent telemetry hydration (docs/TECH-DEBT.md "Agent telemetry reads 0s
-  // on a fresh tab"): AgentSummary has no per-agent cost field (packages/shared
+  // Per-agent telemetry hydration: AgentSummary has no per-agent cost field (packages/shared
   // is frozen), so the UI's agentTokenTotals only ever grew from live
   // cost.event frames — empty until new traffic arrives after a restart, even
   // though globalCost.byAgent was already rehydrated from cost_events at boot

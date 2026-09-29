@@ -103,8 +103,7 @@ function ReviewChip({ review }: { review: PollReview }) {
 }
 
 /**
- * Two-Reviewer Policy chip row (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md
- * acceptance: "review chips incl. the distinct unparseable rendering"). Shows
+ * Two-Reviewer Policy chip row. Shows
  * the CURRENTLY ACTIVE reviewer per slot (activeReviewsPerSlot — a T+4
  * substitute naturally replaces its original in this display, see that
  * function's doc comment). Renders nothing when the poll was never covered

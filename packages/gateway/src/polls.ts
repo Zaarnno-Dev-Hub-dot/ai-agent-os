@@ -1,5 +1,5 @@
 /**
- * Polls / Approvals rail (Wave 4, docs/DESIGN-approvals-rail.md). Decision
+ * Polls / Approvals rail. Decision
  * cards agents — or bridged systems like Paperclip — put in front of the operator
  * inside the dashboard. Config lives at `data/polls.json` (gateway-local,
  * load-at-boot/save-on-mutation — same shape-of-problem as projects.ts's
@@ -26,7 +26,7 @@ export interface PollDecision {
   note?: string;
 }
 
-/** One deferral event (Wave 6, docs/DESIGN-approvals-app-v2.md correction #2). Logged, never overwritten — repeat defers are a growing list, not a single mutable timestamp. */
+/** One deferral event. Logged, never overwritten — repeat defers are a growing list, not a single mutable timestamp. */
 export interface PollDeferral {
   at: number;
   note?: string;
@@ -47,7 +47,7 @@ export interface PollAttachment {
   source?: string;
 }
 
-/** One agent's stated position in a dispute — rendered unedited, side by side with the other side(s) (design doc: "2 sides of the argument if agents disagree"). */
+/** One agent's stated position in a dispute — rendered unedited, side by side with the other side(s). */
 export interface PollDisputeSide {
   agent: string;
   statement?: string;
@@ -57,7 +57,7 @@ export interface PollDisputeSide {
 
 export type PollMessageSeverity = 'info' | 'note' | 'needs-info';
 
-/** A note posted onto an open poll without deciding it — deferrals and more-info asks both append one of these (design doc corrections #2/#3). */
+/** A note posted onto an open poll without deciding it — deferrals and more-info asks both append one of these. */
 export interface PollMessage {
   at: number;
   sender?: string;
@@ -74,7 +74,7 @@ export interface PollMessage {
  */
 export type PollStatus = 'open' | 'decided' | 'expired' | 'withdrawn';
 
-/** One file's display-ready diff (Wave 6, docs/DESIGN-workshop-flow.md) — built once at propose time by workshop.ts's buildUnifiedDiff, already truncated to its per-file line cap. Distinct from Message.attachments' AttachmentRef (byte-stored file uploads): this is ephemeral, poll-scoped diff TEXT, never routed through the /api/files store. */
+/** One file's display-ready diff — built once at propose time by workshop.ts's buildUnifiedDiff, already truncated to its per-file line cap. Distinct from Message.attachments' AttachmentRef (byte-stored file uploads): this is ephemeral, poll-scoped diff TEXT, never routed through the /api/files store. */
 export interface PollDiffAttachment {
   repoPath: string;
   diff: string;
@@ -105,7 +105,7 @@ export interface Poll {
   roomId: string;
   question: string;
   detail?: string;
-  /** Plain-language WHY, distinct from `detail` (kept for v1 wire-compat) — the inbox card's "Why" block prefers this when present (design doc corrections #4: "render exactly as before when rich fields absent"). */
+  /** Plain-language WHY, distinct from `detail` (kept for v1 wire-compat) — the inbox card's "Why" block prefers this when present. */
   detailSummary?: string;
   /** Plain-language recommendation text, shown when `recommendationId` doesn't carry enough on its own (falls back to the recommended option's label). */
   recommendation?: string;
@@ -128,15 +128,15 @@ export interface Poll {
   defaultOptionId?: string;
   status: PollStatus;
   decision?: PollDecision;
-  /** Deferral log (design doc correction #2) — capped at MAX_POLL_DEFERRALS by deferPoll. */
+  /** Deferral log — capped at MAX_POLL_DEFERRALS by deferPoll. */
   deferrals?: PollDeferral[];
-  /** Non-deciding notes posted on an open poll (deferral notes, more-info asks) — rendered in the inbox card's log, additive to v1 (design doc correction #4). */
+  /** Non-deciding notes posted on an open poll (deferral notes, more-info asks) — rendered in the inbox card's log, additive to v1. */
   messages?: PollMessage[];
   source: 'local' | 'paperclip' | 'workshop';
   externalRef?: { approvalId: string; companyId: string };
-  /** Rich-card evidence (design doc: "images, graphs, descriptions"). */
+  /** Rich-card evidence. */
   attachments?: PollAttachment[];
-  /** Both sides of an agent disagreement, unedited (design doc: "2 sides of the argument if agents disagree"). */
+  /** Both sides of an agent disagreement, unedited. */
   disputeSides?: PollDisputeSide[];
   /** source==='workshop' only — per-file diffs for the poll card. */
   diffAttachments?: PollDiffAttachment[];
@@ -228,7 +228,7 @@ export function loadPolls(dataDir: string): PollsState {
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8')) as { polls?: unknown };
     const shaped = Array.isArray(parsed.polls) ? parsed.polls.filter(isPoll) : [];
-    // Belt-and-suspenders (docs/GATE-2026-07-09-wave6.md "Accepted finding"):
+    // Belt-and-suspenders:
     // createPoll forbids a workshop poll from ever carrying a defaultOptionId,
     // so one present here means a hand-edited/corrupted file. Drop it loudly
     // rather than let it survive a reload and auto-apply on the next sweep —
@@ -261,7 +261,7 @@ export interface CreatePollInput {
   detail?: string;
   detailSummary?: string;
   recommendation?: string;
-  /** `id` is caller-supplied when present (e.g. 'approve'/'reject') so recommendationId/defaultOptionId can reference it directly, per the design doc's "must reference a real option id"; auto-generated otherwise. */
+  /** `id` is caller-supplied when present (e.g. 'approve'/'reject') so recommendationId/defaultOptionId can reference it directly, per the original design's "must reference a real option id"; auto-generated otherwise. */
   options: Array<{ id?: string; label: string }>;
   recommendationId?: string;
   requestedBy: string;
@@ -283,7 +283,7 @@ export type CreatePollResult =
  * Create a poll. `roomId` existence/archived-state is NOT checked here (this
  * module has no `rooms` map — same split as loop.ts's startLoop, which
  * leaves room-membership checks to index.ts's caller). Validated here per
- * the design doc: 2..6 options, recommendationId/defaultOptionId (if given)
+ * the original design: 2..6 options, recommendationId/defaultOptionId (if given)
  * must reference a real option id, requestedBy required/non-empty.
  */
 export function createPoll(state: PollsState, input: CreatePollInput): CreatePollResult {
@@ -308,7 +308,7 @@ export function createPoll(state: PollsState, input: CreatePollInput): CreatePol
   const requestedBy = typeof input.requestedBy === 'string' ? input.requestedBy.trim() : '';
   if (requestedBy.length < 1) return { ok: false, error: 'requestedBy is required.' };
 
-  // SECURITY (design doc correction #1, reopened): pollsRoutes.ts's REST
+  // SECURITY: pollsRoutes.ts's REST
   // handler only checks `Array.isArray` on `attachments`/`disputeSides`
   // before casting — deep shape (and critically, `kind` being one of the 4
   // literals the type declares) was previously left entirely to the UI's
@@ -335,8 +335,8 @@ export function createPoll(state: PollsState, input: CreatePollInput): CreatePol
     recommendationId = options.some((o) => o.id === input.recommendationId) ? input.recommendationId : undefined;
     if (!recommendationId) return { ok: false, error: 'recommendationId must reference one of the given options.' };
   }
-  // Workshop polls must never auto-approve (docs/DESIGN-workshop-flow.md
-  // "Workshop polls: defaultOptionId FORBIDDEN (never auto-approve)") — checked
+  // Workshop polls must never auto-approve
+  // (defaultOptionId is forbidden for them) — checked
   // here, the single choke point every caller (including a future one) goes
   // through, rather than trusting each call site to remember the rule.
   if (input.source === 'workshop' && input.defaultOptionId != null) {
@@ -460,15 +460,14 @@ export function withdrawPoll(state: PollsState, pollId: string, note?: string): 
 }
 
 /**
- * Hard cap on deferrals per poll (design doc correction #2: "polls must
- * eventually settle"). Enforced HERE, not just by the UI greying the button
+ * Hard cap on deferrals per poll. Enforced HERE, not just by the UI greying the button
  * out — a stale tab or a replayed WS frame must not be able to defer past
  * the cap just because its local button state was never disabled.
  */
 export const MAX_POLL_DEFERRALS = 3;
 
 /**
- * Defer an open poll (design doc correction #2). Always logs the deferral
+ * Defer an open poll. Always logs the deferral
  * (`deferrals[]`) and a note message; when the poll HAS an expiry, extends
  * `expiresAt` by the poll's ORIGINAL duration (`originalExpiresAt - createdAt`,
  * snapshotted once at creation) rather than the already-mutated current
@@ -522,7 +521,7 @@ export function deferPoll(state: PollsState, pollId: string, by: string, note?: 
 }
 
 /**
- * More-info ask (design doc correction #3): posts a needs-info message onto
+ * More-info ask: posts a needs-info message onto
  * an open poll. No status change, no decision recorded — the requester-notify
  * side effect (bridge wake, VERIFIED-only) is index.ts/pollsRoutes.ts's job,
  * same split as decidePoll (pure state) vs notifyPollSettled (side effects).
@@ -554,8 +553,7 @@ export function requestPollInfo(state: PollsState, pollId: string, by: string, n
 
 /**
  * Expiry sweep: every OPEN poll whose expiresAt has passed is settled —
- * `defaultOptionId` present -> decided by 'auto-default' (ledger-visible,
- * per the design doc's "default is GO" rule as software); absent -> status
+ * `defaultOptionId` present -> decided by 'auto-default'; absent -> status
  * 'expired' (no decision). Run from an interval AND once at boot (rehydrate)
  * so a poll that expired while the gateway was down is not left open
  * forever. Pure: returns the new state plus the list of polls that changed,
@@ -568,7 +566,7 @@ export function sweepExpiredPolls(state: PollsState, now: number = Date.now()): 
     if (p.status !== 'open' || p.expiresAt == null || p.expiresAt > now) return p;
     // Workshop polls must NEVER auto-approve on expiry, even if a corrupted or
     // hand-edited state slipped a defaultOptionId past load-time validation
-    // (docs/GATE-2026-07-09-wave6.md "Accepted finding"). Expire = reject; a
+    //. Expire = reject; a
     // workshop apply only ever runs from an explicit human decide, never a sweep.
     if (p.source === 'workshop') {
       if (p.defaultOptionId != null) {

@@ -6,8 +6,7 @@ export function extractMentions(content: string, agents: AgentSummary[]): string
   ids.add('everyone');
   ids.add('all');
   const found = new Set<string>();
-  // '#' is included so multi-instance seat ids (docs/DESIGN-multi-instance.md,
-  // e.g. `claude-code#work`) parse as a single mention token, not two.
+  // '#' is included so multi-instance seat ids parse as a single mention token, not two.
   const pattern = /@([a-z0-9_#-]+)/gi;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(content))) {

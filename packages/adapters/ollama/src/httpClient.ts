@@ -1,8 +1,7 @@
 import type { AdapterConfig } from '@agent-os/shared';
 
 /**
- * http-openai transport flavor (PRD §adapter-contract, DESIGN doc
- * "Adapter shape"): OpenAI-compatible POST /chat/completions against
+ * http-openai transport flavor: OpenAI-compatible POST /chat/completions against
  * `transport.endpoint`, per-seat `transport.model`. One adapter backs two
  * seats via multi-instance (ollama#qwen, ollama#tiny) — the endpoint is
  * shared, the model differs per seat's AdapterConfig.
@@ -19,7 +18,7 @@ export interface OllamaTransportConfig {
 }
 
 /**
- * Generous default (design doc "Timeouts generous (Mini under load)"): a
+ * Generous default (the original design "Timeouts generous (Mini under load)"): a
  * loaded Mini running a 7B model over a tunnel can take tens of seconds for
  * a single completion. 90s covers that with room, without hanging forever on
  * a genuinely dead endpoint.
@@ -65,8 +64,8 @@ export interface ChatCompletionResult {
 /**
  * One non-streaming POST /chat/completions round trip. v1 ships
  * non-streaming only — Ollama supports SSE, but the relay's AgentEvent
- * stream doesn't need it for a first gate (design doc: "Streaming optional
- * in v1 ... non-streaming acceptable for first gate — note which shipped."
+ * stream doesn't need it for a first gate (the original design: "Streaming optional
+ * in v1... non-streaming acceptable for first gate — note which shipped."
  * This is that note: NON-STREAMING SHIPPED. A follow-up can add `stream:
  * true` + incremental `token` events without touching this function's
  * contract for prove()/health(), only send()).

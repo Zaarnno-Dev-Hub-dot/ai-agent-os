@@ -1,16 +1,15 @@
 import type { AdapterManifest } from '@agent-os/shared';
 
 /**
- * Verification-tier extension (docs/DESIGN-seat-verification-tiers.md).
+ * Verification-tier extension.
  * packages/shared's AdapterManifest has no `verification` field — it is
- * FROZEN (BUILDER_PROTOCOL rule 7) — so the tier lives on a locally widened
+ * FROZEN — so the tier lives on a locally widened
  * type in this leaf adapter package instead. Anything reading `.verification`
  * off a plain `AdapterManifest`-typed value (gateway/agents.ts,
  * gateway/attestedVerifier.ts, gateway/index.ts's state.sync, the UI) casts
  * to this shape at the point of use. Same endpoint-typed-cast idiom already
  * used for room.rollover / state.sync additive fields elsewhere in this repo
- * (docs/TECH-DEBT.md "room.rollover is typed at the endpoints, not in
- * shared") — the object literal below satisfies this WIDER interface, not
+ * — the object literal below satisfies this WIDER interface, not
  * AdapterManifest directly, so TypeScript's excess-property check never
  * fires; the value is still perfectly assignable to a plain
  * `AgentAdapter['manifest']: AdapterManifest` slot because it's a strict
@@ -31,7 +30,7 @@ export interface AttestedAdapterManifest extends AdapterManifest {
 /**
  * identity.modelPattern (fail-closed, same invariant as every other
  * manifest): matches only the two model tags this seat pair is provisioned
- * for (design doc "seats ollama#qwen + ollama#tiny"). Ollama's
+ * for. Ollama's
  * /v1/chat/completions response echoes the requested tag verbatim in its
  * `model` field (verified read-only against the live reality-check endpoint
  * during this build), so anchoring on the family name with an optional
@@ -67,9 +66,7 @@ export const ollamaManifest: AttestedAdapterManifest = {
     modelPattern: OLLAMA_MODEL_PATTERN,
   },
   trust: 'full',
-  // No marginal per-token dollars — your own hardware, $0 tier
-  // (design doc "Router/cost: attested Ollama seats are billing.kind:
-  // 'local'").
+  // No marginal per-token dollars — your own hardware, $0 tier.
   billing: { kind: 'local' },
   verification: 'attested',
   manifestVersion: 1,

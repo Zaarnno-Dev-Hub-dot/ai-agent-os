@@ -24,8 +24,7 @@
 // purpose: no process/connection storm on a 7-seat fleet, worst case is
 // 7 × 15s per sweep, far inside the interval.
 //
-// G2b ACTIVITY PULL (2026-08-01, G2B-AUTH-CONTRACT.md Amendment "A-adapter"; R4
-// revision): same "gateway pulls from the session it owns" precedent as health
+// G2b ACTIVITY PULL: same "gateway pulls from the session it owns" precedent as health
 // above, via an optional AgentSession.activity(). Deliberately NOT a
 // client-postable message on any WS: identity here is "which session the
 // gateway itself chose to poll," so there is nothing for a foreign caller to

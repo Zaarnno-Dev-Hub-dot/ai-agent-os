@@ -1,5 +1,5 @@
 /**
- * Attested-tier verifier (docs/DESIGN-seat-verification-tiers.md). Lives
+ * Attested-tier verifier. Lives
  * OUTSIDE packages/shared on purpose — verifier.ts is FROZEN (Fable-owned,
  * "do not modify without review") and its challenge sequence hard-assumes
  * tool possession (nonce-FILE, capability-probe against a manifest
@@ -55,7 +55,7 @@ import {
 /**
  * Manifest-verification-tier read: packages/shared's AdapterManifest has no
  * `verification` field (frozen) — endpoint-typed cast, same idiom as
- * room.rollover (docs/TECH-DEBT.md). A manifest without the field is `full`.
+ * room.rollover. A manifest without the field is `full`.
  */
 export function isAttestedManifest(manifest: AdapterManifest): boolean {
   return (manifest as AdapterManifest & { verification?: 'attested' }).verification === 'attested';
@@ -63,7 +63,7 @@ export function isAttestedManifest(manifest: AdapterManifest): boolean {
 
 /**
  * "The verifier REFUSES to run `attested` for a manifest that declares
- * tools (no quiet downgrades)" — design doc invariant. A capability string
+ * tools (no quiet downgrades)" — the original design invariant. A capability string
  * containing "tool" (file-tools, session-tools, the bare "tools" hermes
  * declares) is the signal a manifest grants real tool/filesystem access;
  * that combination with `attested` would silently downgrade a
@@ -270,8 +270,7 @@ export async function runAttestedChallenge(
 ): Promise<{ status: AgentStatus; responses: ChallengeResponse[] }> {
   if (manifestDeclaresTools(manifest)) {
     // Fail closed with ZERO live calls — a manifest declaring tools has no
-    // business requesting the weaker tool-less tier at all (design doc: "no
-    // quiet downgrades").
+    // business requesting the weaker tool-less tier at all.
     return {
       status: 'FAILED',
       responses: [
@@ -279,7 +278,7 @@ export async function runAttestedChallenge(
           challengeId: 'atch-refused',
           type: 'identity-echo',
           success: false,
-          error: `Refused: manifest "${manifest.id}" declares tool capabilities [${manifest.capabilities.join(', ')}] but requested the attested (tool-less) verification tier — no quiet downgrades (docs/DESIGN-seat-verification-tiers.md).`,
+          error: `Refused: manifest "${manifest.id}" declares tool capabilities [${manifest.capabilities.join(', ')}] but requested the attested (tool-less) verification tier — no quiet downgrades.`,
           latencyMs: 0,
         },
       ],

@@ -201,7 +201,7 @@ class GrokBuildSession implements AgentSession {
   private disposed = false;
   private sessionId: string | undefined;
   private activeChild: ReturnType<typeof spawnGrokTurn>['child'] | null = null;
-  /** Q7 (TOP-TIER-QUEUE.md, 2026-07-21): the hand-rolled busy-wait send gate, owned once in @agent-os/shared instead of duplicated per adapter. Same grace-wait-then-throw semantics as before. */
+  /** Q7: the hand-rolled busy-wait send gate, owned once in @agent-os/shared instead of duplicated per adapter. Same grace-wait-then-throw semantics as before. */
   private readonly sendGate = new BusySendGate();
 
   constructor(

@@ -21,7 +21,7 @@ import {
 /**
  * Fixture vault built fresh per test run under the OS temp dir — real vault
  * content must never be a test dependency (it changes daily). Mirrors just
- * enough of the real shape (docs/DESIGN-memory-read.md) to exercise every
+ * enough of the real shape to exercise every
  * rule: indexed dirs, excluded dirs, PII files, frontmatter + fallback,
  * and a Secrets section to redact.
  */

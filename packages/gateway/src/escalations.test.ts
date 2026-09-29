@@ -230,8 +230,7 @@ describe('loadEscalations / saveEscalations', () => {
 });
 
 /**
- * Fix-round regression coverage (docs/DESIGN-urgent-sms-escalation.md
- * "Concurrency" section in escalations.ts): the pre-fix route did
+ * Fix-round regression coverage: the pre-fix route did
  * loadEscalations()+checkRateLimit() BEFORE its long bridge-wake await and
  * saveEscalations() with a pre-await snapshot AFTER — under concurrent
  * callers this both bypassed the daily cap (every caller checked the same

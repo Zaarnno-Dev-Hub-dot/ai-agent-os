@@ -10,8 +10,7 @@ interface StatusStyle {
 }
 
 /**
- * Model vocabulary per harness (docs/DESIGN-router.md #3, scout-verified live
- * vocabulary) — kept in sync manually with the gateway's server-side
+ * Model vocabulary per harness — kept in sync manually with the gateway's server-side
  * allowlist (packages/gateway/src/modelVocab.ts; this file cannot import it
  * across the UI/gateway package boundary, same reason connect-agent.mjs
  * duplicates deriveSeatId). Gated on `harness` rather than manifest.cliCommand:
@@ -82,7 +81,7 @@ const MODEL_OPTIONS_BY_MANIFEST: Record<string, string[]> = {
 
 /**
  * Seat id -> manifest id. Seat ids are `manifestId` or `manifestId#instanceId`
- * (docs/DESIGN-multi-instance.md), so the prefix IS the manifest id.
+ *, so the prefix IS the manifest id.
  *
  * Keyed on this rather than `harness` (which is what this map used until
  * 2026-08-08) because the codex seat has to declare `harness: 'homebrew'` —
@@ -105,7 +104,7 @@ function modelOptionLabel(value: string): string {
 /**
  * Model select for seats whose adapter supports agent.set-model
  * (claude-code, grok-build); a fixed-model label for every other harness
- * (hermes, openclaw — no writable model field, per the design doc). The
+ *. The
  * current value is agent.health.modelId (self-reported from inside the
  * session, same field the read-only Model row already showed) — falls back
  * to the first listed option only when there's no live health report yet
@@ -159,7 +158,7 @@ const ATTESTED_STYLE: StatusStyle = { bg: 'rgba(210,153,34,.1)', border: 'rgba(2
 
 /**
  * True when `agent`'s manifest declared the tool-less attested verification
- * tier (docs/DESIGN-seat-verification-tiers.md). AgentSummary has no field
+ * tier. AgentSummary has no field
  * for this — packages/shared is frozen — so it rides state.sync as an
  * additive per-agent key (gateway/index.ts buildStateSync) and is read here
  * via the same endpoint-typed cast as every other additive field in this
@@ -211,8 +210,7 @@ export function AgentSidebarRow({ agent }: { agent: AgentSummary }) {
           : agent.status; // CHALLENGED / CONNECTING / STALE shown as-is
 
   // Attested VERIFIED seats get their own amber badge — distinct at a glance
-  // from the green full-tier VERIFIED badge (design doc: "users must be able
-  // to see the difference at a glance").
+  // from the green full-tier VERIFIED badge.
   const badgeClass = agent.status !== 'VERIFIED' ? 'obadge' : attested ? 'abadge' : 'vbadge';
 
   return (

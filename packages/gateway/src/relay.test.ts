@@ -5,7 +5,7 @@ import { registerAgentRelay, relayMessageToAgents, resolveRelayTargets, unregist
 
 /**
  * Mention resolution over multi-instance seat ids
- * (docs/DESIGN-multi-instance.md): `@claude-code#work` must be a single
+ *: `@claude-code#work` must be a single
  * mention token routing ONLY to that seat, while bare aliases (`@claude`,
  * `@fable`) keep resolving to the `main` seat (`claude-code`) per the design
  * note's back-compat requirement.
@@ -148,7 +148,7 @@ describe('resolveRelayTargets — multi-instance seat mentions', () => {
 });
 
 /**
- * Q8 (2026-07-14, Fable-approved frozen-zone exception, TOP-TIER-QUEUE.md):
+ * Q8:
  * relayMessageToAgents's single delivery-failure catch used to be
  * console.error-only, so a wedged/erroring turn was invisible to every WS
  * client (root cause of the Z4-ratify Convene-Panel no-shows,

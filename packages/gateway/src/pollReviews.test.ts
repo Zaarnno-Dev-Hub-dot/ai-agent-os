@@ -374,8 +374,7 @@ describe('end-to-end: propose -> 2 verdicts -> human decide', () => {
     expect(reviews.find((r) => r.seatId === 'grok-build')).toMatchObject({ slot: 2, family: 'grok-build', verdict: 'concerns', parseOk: true, findings: ['minor nit'] });
 
     // Reviews are advisory only — decide still runs through the ordinary
-    // humanToken-gated path, unaffected by verdict content (design doc: "no
-    // code path into decide/apply").
+    // humanToken-gated path, unaffected by verdict content.
     const outcome = handlePollDecide(h.pollsCtx, poll.id, 'approve', 'human', undefined, h.humanToken);
     expect(outcome.ok).toBe(true);
 
@@ -629,7 +628,7 @@ describe('per-finding validity toggle + digest route', () => {
 });
 
 // ============================================================================
-// Disconnect-mid-review (design doc F5): timeout, logged, NO re-selection.
+// Disconnect-mid-review: timeout, logged, NO re-selection.
 // Direct-context test (no HTTP) — exercises onSeatDisconnected/startPollReview
 // against a hand-built ctx, matching pollReviews.ts's own unit-test seam.
 // ============================================================================

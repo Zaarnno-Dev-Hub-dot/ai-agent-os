@@ -1,5 +1,5 @@
 /**
- * Paperclip bridge wake (F2a, docs/DESIGN-paperclip-agentos-adapter.md §4.5):
+ * Paperclip bridge wake:
  * "post as seat + await that seat's next turn" gateway seam. Pure, testable
  * module — the HTTP route + wiring into relay.ts's exported functions lives
  * in index.ts (same split as loop.ts/router.ts: this file owns state +
@@ -42,7 +42,7 @@ export interface BridgeReply {
   senderId: string;
   ts: number;
   /**
-   * B7 (TOP-TIER-QUEUE.md, landed 2026-07-21): the id of the message this
+   * B7: the id of the message this
    * reply answers, now stamped by relay.ts's commitAgentReply on every seat
    * reply. This is the correlation key observe() matches waits on —
    * undefined only for replies from a build predating this change (never
@@ -126,9 +126,7 @@ interface PendingWait {
  * time by relayMessageToAgents' own mention resolution (see index.ts's
  * wiring); this registry only observes the REPLY side.
  *
- * B7 (TOP-TIER-QUEUE.md, design 2026-07-09, landed 2026-07-21 per Fable's
- * reframe ruling — third narrow frozen-zone exception, Q8-pattern
- * conditions): correlation is now by `replyTo`, not sender-identity +
+ * B7: correlation is now by `replyTo`, not sender-identity +
  * single-flight. relay.ts's commitAgentReply stamps `replyTo` = the id of
  * the message that triggered a seat's turn on EVERY reply, so the bridge
  * message's own id (passed into register() as `triggerMessageId`) is exactly
@@ -285,8 +283,7 @@ export interface BridgeRouteContext {
 }
 
 /**
- * Register `POST /api/bridge/wake` (F2a, docs/DESIGN-paperclip-agentos-
- * adapter.md §4.5) on an existing Fastify instance. See the module doc
+ * Register `POST /api/bridge/wake` on an existing Fastify instance. See the module doc
  * comment for why delivery uses relayMessageToAgents (not onRoomChatMessage)
  * and why the delivery-only clone below uses senderId: 'human'.
  */

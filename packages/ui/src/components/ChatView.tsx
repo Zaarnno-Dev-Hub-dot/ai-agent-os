@@ -36,7 +36,7 @@ export function ChatView() {
   const needsInitialScrollRef = useRef(false);
   const room = rooms.find((r) => r.id === activeRoomId);
   const roomMessages = activeRoomId ? messages.get(activeRoomId) ?? [] : [];
-  // In-room inline poll card (docs/DESIGN-approvals-rail.md #5): open polls
+  // In-room inline poll card: open polls
   // for THIS room, dismissable per-poll without affecting the rail/history —
   // dismissal is cleared automatically once the poll leaves 'open' (see
   // gatewayStore's poll.updated handling), so it never hides a decision.

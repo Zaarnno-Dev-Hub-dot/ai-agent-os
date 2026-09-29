@@ -3,7 +3,7 @@ import { useStore } from '../store/gatewayStore';
 import { renderMarkdown } from '../lib/markdown';
 
 /**
- * Memory panel (docs/DESIGN-memory-read.md): search the read-only Obsidian
+ * Memory panel: search the read-only Obsidian
  * vault, view a rendered note, and pin/unpin it to the active room. Pinned
  * notes for the current room show inline with an unpin action; pinning a
  * note the room already has is a no-op guarded client-side (the gateway is

@@ -1,5 +1,5 @@
 /**
- * Urgent SMS escalation (Wave 6, docs/DESIGN-urgent-sms-escalation.md).
+ * Urgent SMS escalation.
  * Pure gateway-local state plus policy functions — rate limit, quiet hours,
  * secret guard — kept free of Fastify/relay so every branch is unit-testable
  * without a running gateway (same split as polls.ts: this module owns state
@@ -17,7 +17,7 @@ import { join } from 'path';
 
 export type EscalationSeverity = 'high' | 'critical';
 
-/** What actually happened on the SMS side for one escalation — never a claim stronger than what the gateway itself observed (BUILDER_PROTOCOL "no painted status"). */
+/** What actually happened on the SMS side for one escalation — never a claim stronger than what the gateway itself observed. */
 export type SmsOutcome =
   | 'sent' // hermes replied within the wake timeout (its OWN reply, not a parsed confirmation that a phone actually received a text)
   | 'failed' // hermes wasn't VERIFIED, or didn't reply within the timeout
@@ -29,7 +29,7 @@ export interface EscalationRecord {
   ts: number;
   severity: EscalationSeverity;
   title: string;
-  /** Truncated, not the full body forever — this file is a rate-limit ledger first, a convenience log second; the room IS the authoritative audit log (design doc). */
+  /** Truncated, not the full body forever — this file is a rate-limit ledger first, a convenience log second; the room IS the authoritative audit log. */
   bodyPreview: string;
   smsOutcome: SmsOutcome;
 }
@@ -80,7 +80,7 @@ export function saveEscalations(dataDir: string, state: EscalationsState): void 
 }
 
 // ============================================================================
-// Rate limit: 3/day + 30-minute cooldown (design doc "Policy"). `critical`
+// Rate limit: 3/day + 30-minute cooldown. `critical`
 // bypasses the cooldown, never the daily cap — both severities count toward
 // and are limited by the same cap.
 // ============================================================================
@@ -144,7 +144,7 @@ export function checkRateLimit(records: EscalationRecord[], now: number, severit
 }
 
 // ============================================================================
-// Concurrency (fix-round finding, docs/DESIGN-urgent-sms-escalation.md): this
+// Concurrency: this
 // is a single-instance gateway (no multi-process/multi-machine deployment),
 // so an in-memory, promise-chained mutex is enough to make the daily
 // cap/cooldown actually hold, and the persisted file lossless, under
@@ -246,7 +246,7 @@ export function finalizeEscalationOutcome(dataDir: string, id: string, smsOutcom
 }
 
 // ============================================================================
-// Quiet hours: 00:00-08:00 local by default (design doc), env-overridable.
+// Quiet hours: 00:00-08:00 local by default, env-overridable.
 // ============================================================================
 
 export interface QuietHoursOptions {
@@ -258,7 +258,7 @@ export interface QuietHoursOptions {
 
 /**
  * `now`'s hour is read in the SERVER's local time zone (`Date#getHours`) —
- * matching the design doc's "00:00-08:00 local" framing literally (the
+ * matching the original design's "00:00-08:00 local" framing literally (the
  * gateway is a single-machine, single-timezone deployment; no per-user TZ
  * concept exists anywhere else in this codebase either).
  * startHour === endHour disables the window entirely (never quiet) rather
@@ -292,7 +292,7 @@ export function quietHoursOptionsFromEnv(env: NodeJS.ProcessEnv = process.env): 
 
 // ============================================================================
 // Secret guard: the escalation body/title must never carry secrets, keys, or
-// file contents (design doc "Policy") — title+pointer only. Regex guard for
+// file contents — title+pointer only. Regex guard for
 // OBVIOUS key shapes; not a general-purpose secret scanner (that's a much
 // bigger, separately-scoped problem) — this blocks the clear, cheap cases an
 // SMS trigger realistically needs to worry about.

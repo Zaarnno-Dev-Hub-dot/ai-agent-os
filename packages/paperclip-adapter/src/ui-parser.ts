@@ -2,8 +2,7 @@
  * Self-contained UI transcript parser (design §3). ZERO imports — this file
  * must not import anything (not even types) because it runs in Paperclip's
  * browser sandbox and is dynamically loaded from the API as external-adapter
- * UI parsers are (see docs/adapters/adapter-ui-parser.md in the Paperclip
- * clone: "zero runtime imports, no side effects"). Local structural types are
+ * UI parsers are. Local structural types are
  * declared inline below instead of imported from vendor-types.ts so this file
  * has no dependency edge at all, matching hermes_gateway's gateway-ui-parser.cjs
  * contract 1:1 (just authored in .ts instead of .cjs, per this package's

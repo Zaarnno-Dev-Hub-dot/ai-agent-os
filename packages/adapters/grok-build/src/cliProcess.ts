@@ -12,14 +12,13 @@ export interface GrokBuildTransportConfig {
   /** Working directory the CLI is spawned in (defaults to config.workspace). */
   cwd?: string;
   /**
-   * Flag name for prompt input (default: '-p', matching Claude Code's
-   * convention per PRD §3.1). Overridable in case the real CLI differs —
+   * Flag name for prompt input. Overridable in case the real CLI differs —
    * this has not been verified against a live binary; see manifest.ts note.
    */
   promptFlag?: string;
   /** Flag name for streaming JSON output mode (default: '--output-format'). */
   outputFormatFlag?: string;
-  /** Value passed to outputFormatFlag (default: 'streaming-json' per PRD §3.1's exact wording). */
+  /** Value passed to outputFormatFlag. */
   outputFormatValue?: string;
   /** Flag name for session resume (default: '--resume'). */
   resumeFlag?: string;
@@ -29,7 +28,7 @@ export interface GrokBuildTransportConfig {
   systemPromptFlag?: string;
   /**
    * Model for every turn (-m), e.g. 'grok-build'. Mirrors claude-code's
-   * ClaudeCodeTransportConfig.model field exactly (docs/DESIGN-router.md):
+   * ClaudeCodeTransportConfig.model field exactly:
    * unset = the CLI's account default (grok-composer-2.5-fast).
    */
   model?: string;
@@ -112,7 +111,7 @@ export function fullAutoRoomsFor(config: AdapterConfig): Set<string> {
  * SECURITY — RESIDUAL EXFIL CHANNEL, KNOWINGLY UNRESOLVED (M10, 2026-07-21
  * review-panel finding): this is READ-ONLY, not READ-SCOPED. grok 0.2.82's
  * only verified tool-restriction surface is --tools, a tool-NAME allowlist
- * (docs/GATE-2026-07-04-grok-build-verified.md) — there is no confirmed
+ * — there is no confirmed
  * flag that pins Read/Grep/Glob to a directory (no --tools-dir, --cwd-root,
  * sandbox, or similar has been verified live against the real binary). That
  * means a prompt-injected turn in a non-full-auto room can still

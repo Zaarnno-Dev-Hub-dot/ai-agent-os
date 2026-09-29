@@ -1,5 +1,5 @@
 /**
- * Polls/Approvals rail wiring (Wave 4, docs/DESIGN-approvals-rail.md §3):
+ * Polls/Approvals rail wiring:
  * REST create, WS decide, expiry-sweep settle, and the two on-decide side
  * effects (requester notify + Paperclip POST-back). Pulled out of index.ts
  * into its own module — same split as bridge.ts/loop.ts: this file owns the
@@ -48,7 +48,7 @@ export interface PollsRouteContext {
   messages: Map<string, Message[]>;
   db: RelayDeps['db'];
   dataDir: string;
-  /** Repo root — Wave 6 workshop-apply's `git worktree add` runs here (docs/DESIGN-workshop-flow.md). Unused by any non-workshop poll source. */
+  /** Repo root — Wave 6 workshop-apply's `git worktree add` runs here. Unused by any non-workshop poll source. */
   projectRoot: string;
   paperclipBaseUrl: string;
   getPollsState: () => PollsState;
@@ -59,7 +59,7 @@ export interface PollsRouteContext {
   broadcastStateSync: () => void;
   /** Persisted, broadcast system-line helper — index.ts's own postSystemLine. */
   postSystemLine: (roomId: string, content: string) => void;
-  /** Boot-minted humanToken (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2) — poll.decide REQUIRES a caller to present this exact value; see handlePollDecide's `providedToken` param. */
+  /** Boot-minted humanToken — poll.decide REQUIRES a caller to present this exact value; see handlePollDecide's `providedToken` param. */
   humanToken: string;
   /**
    * Two-Reviewer Policy hook (Wave 7 M3): fired for every poll that just
@@ -98,8 +98,7 @@ export function broadcastPollUpdated(ctx: PollsRouteContext, poll: Poll): void {
 /**
  * Shared requester-wake plumbing for every poll side effect that must reach
  * back into a room (settle notify AND more-info notify) — only if
- * `requestedBy` is a currently-VERIFIED seat (design doc correction #3: "same
- * guard as notifyPollSettled"). REUSES bridge.ts's buildBridgeMessageContent/
+ * `requestedBy` is a currently-VERIFIED seat. REUSES bridge.ts's buildBridgeMessageContent/
  * newBridgeMessageId (mention-injection-safe prompt building) and the exact
  * persisted-message + delivery-only-clone shape bridge.ts's own route uses,
  * rather than forking that logic. Never throws into the caller — log-once on
@@ -136,8 +135,7 @@ async function notifyRequesterSeat(ctx: PollsRouteContext, poll: Poll, summary: 
 }
 
 /**
- * Side effects for a poll that just settled (manual decide OR expiry sweep —
- * both funnel here so the two triggers behave identically, design doc §3):
+ * Side effects for a poll that just settled:
  *   (b) if requestedBy is a currently-VERIFIED seat, wake it with the
  *       decision via notifyRequesterSeat.
  *   (c) if source='paperclip', POST the decision back to Paperclip per the
@@ -181,18 +179,17 @@ export async function notifyPollSettled(ctx: PollsRouteContext, poll: Poll): Pro
     }
   }
 
-  // Workshop apply (Wave 6, docs/DESIGN-workshop-flow.md §"Decide"): fixed
+  // Workshop apply: fixed
   // option ids from workshopRoutes.ts's registerWorkshopRoute
   // ([{id:'approve'},{id:'reject'}]) — same "poll.status==='decided'" guard
   // as the paperclip branch above, which also naturally excludes an EXPIRED
   // workshop poll (workshop polls can never carry a defaultOptionId per
   // polls.ts's createPoll, so expiry always settles as 'expired', never
   // 'decided' — sweepExpiredPolls only reaches 'decided' via a
-  // defaultOptionId auto-default). Reject applies nothing (design doc: "Reject
-  // → nothing applied, system line only") — the existing pollDecisionLine
+  // defaultOptionId auto-default). Reject applies nothing — the existing pollDecisionLine
   // system line from handlePollDecide/sweepAndSettlePolls already covers that
   // half; only approve does more work here. Every propose/apply/reject gets a
-  // gateway log line (design doc "audit trail") — propose's is in
+  // gateway log line — propose's is in
   // workshopRoutes.ts, decide's (both outcomes) is here.
   if (poll.source === 'workshop' && poll.status === 'decided') {
     const approved = poll.decision?.optionId === 'approve';
@@ -216,9 +213,7 @@ export async function notifyPollSettled(ctx: PollsRouteContext, poll: Poll): Pro
 }
 
 /**
- * Requester-notify for a more-info ask (design doc correction #3: "notifies
- * the requester seat via the existing bridge notify mechanics ... No status
- * change"). Unlike notifyPollSettled there is no Paperclip POST-back branch —
+ * Requester-notify for a more-info ask. Unlike notifyPollSettled there is no Paperclip POST-back branch —
  * the poll hasn't settled, there is nothing to report back externally.
  */
 export async function notifyPollInfoRequested(ctx: PollsRouteContext, poll: Poll, note?: string): Promise<void> {
@@ -243,15 +238,12 @@ function notifyInfoRequestedAsync(ctx: PollsRouteContext, poll: Poll, note?: str
 export type DecideOutcome = { ok: true; poll: Poll } | { ok: false; error: string };
 
 /**
- * WS poll.decide (human-seats-only per the design doc — see index.ts's WS
- * pre-switch case for why every connection accepted there IS a human
- * browser tab in this codebase). Settle-once via polls.ts's decidePoll,
+ * WS poll.decide. Settle-once via polls.ts's decidePoll,
  * persist, system line, poll.updated broadcast, fresh state.sync, and the
  * on-decide side effects — fire-and-forget so a slow/failing notify or
  * Paperclip POST-back never delays the WS response.
  *
- * `providedToken` (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md B2 —
- * "invariant-already-false (loopback WS decide)"): checked FIRST, before
+ * `providedToken` ("invariant-already-false (loopback WS decide)"): checked FIRST, before
  * `decidePoll` even runs — a caller who cannot present the exact boot-minted
  * humanToken (delivered only via the served index.html; see index.ts) gets
  * `HUMAN_TOKEN_REQUIRED_ERROR` and nothing is decided. This closes the hole
@@ -331,7 +323,7 @@ export function handlePollWithdraw(
 }
 
 /**
- * WS poll.defer (design doc correction #2), human-seats-only — same access
+ * WS poll.defer, human-seats-only — same access
  * model as poll.decide (see index.ts's WS pre-switch case). Delegates the
  * extension math + cap enforcement to polls.ts's deferPoll; this wrapper
  * owns persistence, the room system line, and the live broadcasts. The poll
@@ -351,7 +343,7 @@ export function handlePollDefer(ctx: PollsRouteContext, pollId: string, by: stri
 }
 
 /**
- * WS poll.info-requested (design doc correction #3), human-seats-only — same
+ * WS poll.info-requested, human-seats-only — same
  * access model as poll.decide. Posts the needs-info message (polls.ts's
  * requestPollInfo; no status change) AND notifies the requester seat over
  * the bridge, fire-and-forget same as settlePollAsync so a slow/failing
@@ -375,7 +367,7 @@ export function handlePollInfoRequested(
 }
 
 /**
- * Expiry sweep (design doc §3 "Expiry sweep"): interval + boot rehydrate, so
+ * Expiry sweep: interval + boot rehydrate, so
  * a poll that expired while the gateway was down is not left open forever.
  * Pure decision lives in polls.ts (sweepExpiredPolls); this wrapper owns
  * persistence + broadcast + settle side effects, same split as handlePollDecide.
@@ -394,7 +386,7 @@ export function sweepAndSettlePolls(ctx: PollsRouteContext): void {
 }
 
 /**
- * POST /api/polls (design doc §3 "Create"). REST, loopback trust model —
+ * POST /api/polls. REST, loopback trust model —
  * same convention as POST /api/bridge/wake ("the gateway binds 127.0.0.1 and
  * trusts local callers; this endpoint invents no new auth system"). Agents,
  * scripts, and (indirectly, via createPoll called in-process) the Paperclip
@@ -417,13 +409,13 @@ export function registerPollsRoute(fastify: FastifyInstance, ctx: PollsRouteCont
       roomId,
       question: typeof body.question === 'string' ? body.question : '',
       detail: typeof body.detail === 'string' ? body.detail : undefined,
-      // Rich-card fields (Wave 6, docs/DESIGN-approvals-app-v2.md) — additive,
+      // Rich-card fields — additive,
       // same bare-cast-with-fallback style as `options` below. This route only
       // checks "is it an array" — the cast is NOT a runtime shape guarantee.
       // Per-item shape (crucially, `kind` being one of the 4 literals the type
       // declares) is deep-validated one call down, in createPoll() itself,
       // via polls.ts's own isPollAttachment/isPollDisputeSide (SECURITY,
-      // design doc correction #1 reopened: a missing/non-canonical `kind`
+      // the original design correction #1 reopened: a missing/non-canonical `kind`
       // used to sail through to the UI's attachmentSrc() allowlist, which
       // gates url/data SHAPE but not `kind` — see pollPresent.ts). Rejecting
       // malformed attachments at creation time, not just relying on the

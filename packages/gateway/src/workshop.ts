@@ -1,10 +1,10 @@
 /**
- * Workshop flow — pure logic (Wave 6, docs/DESIGN-workshop-flow.md): manifest
+ * Workshop flow — pure logic: manifest
  * shape validation, the repoPath allow/deny policy, the seat-draft-relative
  * workspacePath traversal guard, a UTF-8/binary text check, a dependency-free
  * unified-diff builder, and the "Workshop" room finder. No fs/child_process/
  * fastify here — every rule in this file is a pure function of its inputs so
- * the design doc's "EVERY validation rule gets a unit test" requirement is
+ * the original design's "EVERY validation rule gets a unit test" requirement is
  * cheap to satisfy (call the function, assert on the result, no temp dirs or
  * git needed). The impure half (reading the draft dir, running git, the
  * Fastify route) lives in workshopRoutes.ts — same split as polls.ts (pure
@@ -14,7 +14,7 @@
 import type { Room } from '@agent-os/shared';
 
 // ============================================================================
-// Caps (design doc "Validation" section)
+// Caps
 // ============================================================================
 
 /** ≤40 files per manifest. */
@@ -89,7 +89,7 @@ export function validateWorkspacePath(raw: unknown): PathCheck {
 }
 
 /**
- * repoPath: the full v1 policy from the design doc — structural safety
+ * repoPath: the full v1 policy from the original design — structural safety
  * (above) plus dotfiles/.git denied always, the explicit deny list denied
  * always (even inside an allowed prefix), and otherwise must match the v1
  * allowlist. Order matters: structural checks first (closes the traversal-
@@ -223,8 +223,7 @@ export function isUtf8Text(buf: Buffer): boolean {
 }
 
 // ============================================================================
-// Unified diff (dependency-free — no npm package in this repo does this; see
-// docs/DESIGN-workshop-flow.md's "attachments = per-file unified diffs")
+// Unified diff
 // ============================================================================
 
 interface DiffOp {
@@ -394,7 +393,7 @@ export interface UnifiedDiffResult {
 /**
  * Builds one file's unified diff, honestly truncated to `maxLines` total
  * lines (header + hunks) with a trailing "+N more" note when cut short —
- * exactly the design doc's "attachments = per-file unified diffs (text
+ * exactly the original design's "attachments = per-file unified diffs (text
  * attachments, truncated 400 lines/file with honest '+N more' note)".
  * `oldText === undefined` means the repoPath doesn't exist yet in the repo
  * (a brand-new file) — rendered `--- /dev/null`, same convention git itself

@@ -1,6 +1,5 @@
 /**
- * Loop-lite: builder+judge auto-relay on free/local seats (Wave 2, planned in
- * docs/HANDOFF-2026-07-07-wave1.md). One room may run at most one loop: a
+ * Loop-lite: builder+judge auto-relay on free/local seats. One room may run at most one loop: a
  * builder seat and a judge seat take turns, each turn addressed to the OTHER
  * seat via relay.ts's OWN exported relayMessageToAgents (mentions-patched
  * message clone) — same composition shape as the Router (router.ts), no

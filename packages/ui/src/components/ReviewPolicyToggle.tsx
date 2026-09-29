@@ -9,8 +9,7 @@ const MODES: Array<{ id: ReviewPolicyMode; label: string; title: string }> = [
 ];
 
 /**
- * review_policy toggle (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md
- * "Config"). The server is authoritative — clicking a mode POSTs to
+ * review_policy toggle. The server is authoritative — clicking a mode POSTs to
  * /api/review-policy (humanToken attached automatically by
  * lib/reviewPolicy.ts's setReviewPolicyMode) and waits for the
  * `review.policy.status` broadcast (gatewayStore.ts) to actually move the

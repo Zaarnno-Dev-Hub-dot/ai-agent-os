@@ -84,7 +84,7 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [toggleSidebar]);
 
-  // Voice v1 (docs/DESIGN-voice-v1.md): pull persisted auto-read rooms +
+  // Voice v1: pull persisted auto-read rooms +
   // voice/rate settings once at mount (the store starts with hardcoded-safe
   // defaults so it's import-safe in any environment — see voiceStore.ts),
   // then keep tabVisible live for auto-read's visibility gate.

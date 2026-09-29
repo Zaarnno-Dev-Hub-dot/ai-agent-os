@@ -1,11 +1,11 @@
 /**
- * Studio Dock registry (docs/DESIGN-studio-dock.md §2) — `data/dock-apps.json`
+ * Studio Dock registry — `data/dock-apps.json`
  * is the interface (no editor UI in v1; a settings panel is a later app).
  * Read-only over the wire: loaded once at boot, served as an additive
  * `state.sync` field (`dockApps`, cast at endpoints — index.ts/gatewayStore.ts
  * — same idiom as the polls/projects fields, packages/shared stays frozen).
  *
- * Hard rule from the design doc (drive-by lesson from 7/4): every `iframe`
+ * Hard rule from the original design (drive-by lesson from 7/4): every `iframe`
  * entry's `url` MUST resolve to host 127.0.0.1/localhost/::1. Anything else
  * is dropped at load, loudly, rather than ever reaching a client.
  */
@@ -22,13 +22,13 @@ export interface DockAppEntry {
   kind: DockAppKind;
   /** Required (and loopback-validated) for kind 'iframe'; absent for 'route'. */
   url?: string;
-  /** Registry-level manual disable (design doc: "Disabled entries render greyed with a tooltip"). Defaults to true when absent. */
+  /** Registry-level manual disable. Defaults to true when absent. */
   enabled?: boolean;
 }
 
 const REGISTRY_FILENAME = 'dock-apps.json';
 
-/** host is 127.0.0.1, localhost, or ::1 — the loopback allowlist (design doc §2/§3). */
+/** host is 127.0.0.1, localhost, or ::1 — the loopback allowlist. */
 export function isLoopbackUrl(raw: string): boolean {
   let u: URL;
   try {

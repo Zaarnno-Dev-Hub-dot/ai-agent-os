@@ -1,6 +1,5 @@
 /**
- * Two-Reviewer Policy — wiring (Wave 7 M3,
- * docs/DESIGN-two-reviewer-policy.md "Review execution" + "Ledger"). Owns:
+ * Two-Reviewer Policy — wiring. Owns:
  *   - the actual reviewer wakes, REUSING bridge.ts's BridgeWaitRegistry/
  *     buildBridgeMessageContent/newBridgeMessageId — the SAME "post a
  *     message addressed to one seat, deliver via relay.ts's unmodified
@@ -65,9 +64,9 @@ import {
 
 export { applyPollReviewsSchema };
 
-/** Explicit 4-min per-reviewer wake timeout (design doc F7: "NOT the bridge 570s default"). */
+/** Explicit 4-min per-reviewer wake timeout. */
 export const REVIEW_WAKE_TIMEOUT_MS = 4 * 60_000;
-/** 10-min card deadline (design doc F7). */
+/** 10-min card deadline. */
 export const REVIEW_CARD_DEADLINE_MS = 10 * 60_000;
 
 /** Non-agent sender for review wake messages, same class as bridge.ts's BRIDGE_SENDER_ID / pollsRoutes.ts's POLL_SYSTEM_SENDER_ID. */
@@ -201,8 +200,7 @@ interface WakeOptions {
  * Wake one reviewer seat and, on settle, record the outcome (handleWakeSettle
  * below). Fire-and-forget from the caller's perspective — startPollReview
  * never awaits this; the underlying poll/action is already live and reviews
- * are purely additive (design doc: "reviews NEVER gate or extend a poll's
- * life").
+ * are purely additive.
  */
 function wakeReviewerSeat(ctx: PollReviewsContext, tracker: PollReviewTracker, poll: Poll, opts: WakeOptions): void {
   const now = ctx.now ? ctx.now() : Date.now();
@@ -227,7 +225,7 @@ function wakeReviewerSeat(ctx: PollReviewsContext, tracker: PollReviewTracker, p
   // buildReviewPrompt is a pure function of (poll question/detail/diff) alone
   // — it never receives the OTHER slot's seat id, family, or verdict, so
   // there is nothing about the other reviewer for THIS wake to leak by
-  // construction (design doc F6 isolation), not by an after-the-fact filter.
+  // construction, not by an after-the-fact filter.
   const prompt = buildReviewPrompt(poll.question, poll.detail, diffTextForPoll(poll));
 
   // B7: register with this wake's OWN message id up front — relay.ts's
@@ -275,7 +273,7 @@ function wakeReviewerSeat(ctx: PollReviewsContext, tracker: PollReviewTracker, p
  * coerced to approve on a parse failure). Timeout -> mark timed-out and,
  * capped at ONE substitute per slot (never chained), spawn a substitute for
  * the SAME slot from the ORIGINAL propose-time candidate pool — this is the
- * one exception the design doc itself carves out of "never re-select from a
+ * one exception the original design itself carves out of "never re-select from a
  * post-propose pool" (F5 is about not re-WIDENING the pool on a bare
  * disconnect; F7's T+4 substitute is a documented, capped, same-pool
  * exception). Runs IN PARALLEL with any still-pending original in the other
@@ -377,11 +375,10 @@ function finalizeCardDeadline(ctx: PollReviewsContext, tracker: PollReviewTracke
 // ============================================================================
 
 /**
- * Covered-action entry point (design doc "Review execution" step 1): "the
+ * Covered-action entry point: "the
  * action itself is unchanged" — this is called AFTER the poll already exists
  * and its own response already went out; a failed/absent selection here
- * NEVER unwinds or blocks the caller (fail-open, design doc: "reviews NEVER
- * gate or extend a poll's life").
+ * NEVER unwinds or blocks the caller.
  */
 export function startPollReview(ctx: PollReviewsContext, tracker: PollReviewTracker, poll: Poll, actionType: CoveredActionType): void {
   const policy = ctx.getReviewPolicy();
@@ -436,7 +433,7 @@ export function startPollReview(ctx: PollReviewsContext, tracker: PollReviewTrac
 }
 
 /**
- * Poll settled (decided OR expired) — design doc: "poll expiry cancels
+ * Poll settled (decided OR expired) — the original design: "poll expiry cancels
  * pending reviews... reviews never extend or gate a poll's life." Cancels
  * the card-deadline timer and every still-pending wait for this poll
  * (best-effort — a wake already in flight on a seat's own turn cannot be
@@ -465,8 +462,7 @@ export function onPollSettled(ctx: PollReviewsContext, tracker: PollReviewTracke
 }
 
 /**
- * Disconnect-mid-review (design doc F5, acceptance: "disconnect-mid-review =
- * timeout, logged, no re-selection"). Marks every review this seat currently
+ * Disconnect-mid-review. Marks every review this seat currently
  * has 'pending' as timed-out IMMEDIATELY (rather than waiting out the full
  * 4-min wake window) and cancels the underlying wait — deliberately does
  * NOT spawn a substitute from this path (only the T+4 wake-timeout path
@@ -505,11 +501,10 @@ export interface PollReviewRouteContext extends PollReviewsContext {
 }
 
 /**
- * GET/POST /api/review-policy (design doc "Config" knob) + per-finding
+ * GET/POST /api/review-policy + per-finding
  * valid/invalid toggle + digest + reviews-by-poll read. Loopback trust for
  * every route EXCEPT the POST toggle, which additionally requires
- * `body.humanToken` to match — same "mutating human-op" gate as poll.decide
- * (design doc B2 acceptance list).
+ * `body.humanToken` to match — same "mutating human-op" gate as poll.decide.
  */
 export function registerPollReviewRoutes(fastify: FastifyInstance, ctx: PollReviewRouteContext): void {
   fastify.get('/api/review-policy', async () => ctx.getReviewPolicy());

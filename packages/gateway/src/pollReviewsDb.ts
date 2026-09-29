@@ -1,9 +1,6 @@
 /**
  * poll_reviews + poll_review_findings — normalized SQL persistence for the
- * Two-Reviewer Policy ledger (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md
- * "Ledger + the keep/kill metric", adjudicated Q5: "review records are
- * mutable multi-stage state, unlike append-only cost_events — reuse the
- * persistence plumbing style only").
+ * Two-Reviewer Policy ledger.
  *
  * `DB_SCHEMA` (packages/shared/src/types.ts) is FROZEN, so these two tables
  * are NOT added there — this module applies its own idempotent DDL,
@@ -139,7 +136,7 @@ export function insertFindings(db: SqlDatabase, reviewId: string, findings: stri
   });
 }
 
-/** Per-finding human ground truth (design doc: "valid/invalid toggle per finding — cheap single-user ground truth"). `valid: null` clears back to unmarked (the toggle is a 3-state cycle in the UI: unmarked -> valid -> invalid -> unmarked). */
+/** Per-finding human ground truth. `valid: null` clears back to unmarked (the toggle is a 3-state cycle in the UI: unmarked -> valid -> invalid -> unmarked). */
 export function setFindingValidity(db: SqlDatabase, reviewId: string, idx: number, valid: boolean | null): void {
   db.run(`UPDATE poll_review_findings SET valid = ? WHERE review_id = ? AND idx = ?`, [
     valid == null ? null : valid ? 1 : 0,
@@ -148,7 +145,7 @@ export function setFindingValidity(db: SqlDatabase, reviewId: string, idx: numbe
   ]);
 }
 
-/** Backfills the human decision onto every review row for a poll once it settles — feeds the red-override log (design doc: "tells us WHOSE rejects get overridden"). No-op for a poll with no review rows. */
+/** Backfills the human decision onto every review row for a poll once it settles — feeds the red-override log. No-op for a poll with no review rows. */
 export function backfillHumanDecision(db: SqlDatabase, pollId: string, decision: string, decidedAt: number): void {
   db.run(`UPDATE poll_reviews SET human_decision = ?, human_decided_at = ? WHERE poll_id = ?`, [decision, decidedAt, pollId]);
 }
@@ -250,8 +247,7 @@ export function loadPollReviewById(db: SqlDatabase, id: string): PollReview | un
 }
 
 /**
- * Rotation source (design doc: "Rotation cursor: persisted in the reviews
- * table"). MAX(wake_at) per seat across every review row ever created for
+ * Rotation source. MAX(wake_at) per seat across every review row ever created for
  * that seat — a seat never selected returns -Infinity so it sorts first.
  * Restart-durable by construction: this queries the SQL table, not an
  * in-memory cursor.
@@ -268,7 +264,7 @@ export function lastSelectedAtBySeat(db: SqlDatabase): Map<string, number> {
 }
 
 // ============================================================================
-// Digest — the keep/kill metric (design doc "Ledger + the keep/kill metric")
+// Digest — the keep/kill metric
 // ============================================================================
 
 export interface ReviewDigest {
@@ -277,20 +273,19 @@ export interface ReviewDigest {
   /** Per-reviewer-seat precision: valid / (valid + invalid) among MARKED findings only (unmarked findings don't count toward either side — precision is only defined over ground truth that actually exists). */
   precisionBySeat: Array<{ seatId: string; family: string; validCount: number; invalidCount: number; precision: number | null }>;
   precisionByFamily: Array<{ family: string; validCount: number; invalidCount: number; precision: number | null }>;
-  /** Reject verdicts whose poll was ultimately decided with a DIFFERENT option than reject — i.e. the human overrode a reviewer's reject (design doc: "tells us WHOSE rejects get overridden — trust signal for Teams-as-lanes"). */
+  /** Reject verdicts whose poll was ultimately decided with a DIFFERENT option than reject — i.e. the human overrode a reviewer's reject. */
   redOverrides: Array<{ reviewId: string; pollId: string; seatId: string; humanDecision: string }>;
   /** Milliseconds, sorted-median of (attach_at - wake_at) across every attached review in the window. Null if no attached reviews exist yet. */
   p50AttachLatencyMs: number | null;
-  /** Distinct pool_size values seen and their counts (design doc F4 instrumentation). */
+  /** Distinct pool_size values seen and their counts. */
   poolSizeDistribution: Array<{ poolSize: number; count: number }>;
   /** attached reviews whose parse_ok=0 (should never happen — attach only happens after a reply arrives, and status stays 'pending'/'timed-out' otherwise, but this counts every reply that arrived and failed to parse regardless of eventual status) over every review that ever got a reply at all. */
   unparseableRate: number | null;
 }
 
 /**
- * Computes the design doc's "keep bar" metrics in one pass over
- * poll_reviews/poll_review_findings. Documented query shape (design doc
- * acceptance: "digest query documented"):
+ * Computes the original design's "keep bar" metrics in one pass over
+ * poll_reviews/poll_review_findings. Documented query shape:
  *   - true-catch / precision: GROUP BY seat_id / family over
  *     poll_review_findings.valid (join back to poll_reviews for family).
  *   - red-override: poll_reviews WHERE verdict='reject' AND human_decision

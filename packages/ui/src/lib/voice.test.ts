@@ -207,7 +207,7 @@ describe('joinDictation', () => {
 // events) interleaved with reanchorDictationSession calls (the four external
 // mutation paths: typed edit, emoji pick, @mention insert, send). Composer
 // itself stays untested at the component level — no RTL/jsdom in this
-// codebase (see docs/TECH-DEBT.md's 2026-07-09 voice fix round entry) — but
+// codebase — but
 // since both bugs live entirely in this state machine's transition logic,
 // not in DOM wiring, these give the same regression coverage a rendered
 // Composer test would.

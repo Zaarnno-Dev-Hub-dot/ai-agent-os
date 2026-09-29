@@ -1,6 +1,5 @@
 /**
- * Projects layer (Phase 3 Milestone E, slimmed per docs/DESIGN-PAPERCLIP-
- * ADOPTION.md line 145 to "room<->project tagging + un-archive"). A grouping
+ * Projects layer. A grouping
  * level ABOVE rooms — Room itself carries no projectId field (packages/shared
  * is frozen), so the room<->project relationship lives entirely in this
  * gateway-local side-table, same shape-of-problem as router.ts's

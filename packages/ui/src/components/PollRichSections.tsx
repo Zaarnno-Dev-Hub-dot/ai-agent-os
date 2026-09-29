@@ -3,11 +3,11 @@ import type { Poll, PollAttachment, PollDisputeSide } from '../store/gatewayStor
 import { pollAttachments, pollRecommendationText, pollSummaryLines, resolveAttachmentView } from '../lib/pollPresent';
 
 /**
- * Rich-card sections for the Approvals Inbox (Wave 6, docs/DESIGN-approvals-app-v2.md):
+ * Rich-card sections for the Approvals Inbox:
  * WHAT/WHY/RECOMMENDATION, an attachments gallery (images/graphs/tables/text),
  * and dispute columns (both agents' own statements, unedited, side by side).
  * Mounted only by PollCard's `variant="inbox"` — the rail/in-room variant is
- * unchanged (design doc correction #4: v1 polls render exactly as before).
+ * unchanged.
  */
 export function PollSummarySection({ poll }: { poll: Poll }) {
   const { what, why } = pollSummaryLines(poll);
@@ -35,7 +35,7 @@ export function PollSummarySection({ poll }: { poll: Poll }) {
 }
 
 /**
- * SECURITY (design doc correction #1, reopened): this component used to
+ * SECURITY: this component used to
  * compute `attachmentSrc(att)` unconditionally and trust it in the fallback
  * branch's `<a href>` for ANY `att.kind` — but attachmentSrc's allowlist
  * checked url/data SHAPE, not `kind`, so a missing/misnamed kind (e.g. a

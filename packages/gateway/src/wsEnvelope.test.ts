@@ -99,8 +99,7 @@ describe('serializeEnvelope / sendSerializedEnvelope (serialize-once broadcast)'
 });
 
 // ============================================================================
-// roomError targeting (docs/TECH-DEBT.md "roomError currently BROADCASTS
-// rejection notices to all clients instead of the offender") — the fix under
+// roomError targeting — the fix under
 // test: roomError must reach ONLY the socket passed to it, never any other
 // connected client. Message SHAPE must stay identical to the pre-fix
 // broadcast version (same 'error' ServerEvent payload).

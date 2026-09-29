@@ -15,13 +15,13 @@ const PING_TIMEOUT_MS = 5_000;
 
 /**
  * Ping an iframe dock app's own loopback URL to auto-grey it when it's not
- * running (docs/DESIGN-studio-dock.md §2: "the sidebar may ping the app's
+ * running (: "the sidebar may ping the app's
  * url (HEAD, 1s timeout) to auto-grey dead apps"). `mode: 'no-cors'` is
  * deliberate — most of these local apps won't send us CORS headers, and we
  * don't need to read the response, only whether the port answered at all.
  *
- * Method is GET, NOT the design doc's HEAD: Next.js dev servers (e.g.
- * Videxa on :3847) never answer HEAD — the request hangs, the app greys
+ * Method is GET, NOT the original design's HEAD: Next.js dev servers (e.g.
+ * Videxa on:3847) never answer HEAD — the request hangs, the app greys
  * out despite being alive, and every 30s ping parks another wedged socket
  * on the dev server until IT stops answering too (observed 2026-07-11).
  * GET of a page every 30s on loopback is cheap; HEAD is the hazard here.
@@ -42,7 +42,7 @@ async function pingAlive(url: string): Promise<boolean> {
 }
 
 /**
- * STUDIO section in the left sidebar (docs/DESIGN-studio-dock.md §1):
+ * STUDIO section in the left sidebar:
  * registry-driven list of dock apps below the seated agents. Clicking an
  * entry mounts it in the main pane via DockView (App.tsx swaps ChatView for
  * DockView when activeDockAppId is set); clicking a room returns to chat

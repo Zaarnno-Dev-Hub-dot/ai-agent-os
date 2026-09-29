@@ -3,7 +3,7 @@ import { MemoryGalaxy } from './MemoryGalaxy';
 import { ApprovalsInbox } from './ApprovalsInbox';
 
 /**
- * Main-pane mount for Studio Dock apps (docs/DESIGN-studio-dock.md §1/§3).
+ * Main-pane mount for Studio Dock apps.
  * `route` apps render an internal React view keyed by id; `iframe` apps
  * mount a sandboxed iframe pointed at the app's own loopback URL — the
  * gateway never proxies that traffic (browser talks to the app's port

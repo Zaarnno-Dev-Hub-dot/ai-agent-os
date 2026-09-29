@@ -5,9 +5,7 @@ import { PollCard } from './PollCard';
 import { ReviewPolicyToggle } from './ReviewPolicyToggle';
 
 /**
- * Studio Dock route `approvals-inbox` (docs/DESIGN-approvals-app-v2.md;
- * registered in data/dock-apps.json per docs/DESIGN-studio-dock.md §2 — NOT
- * hardcoded). Single-card focus on the oldest open poll, with queue
+ * Studio Dock route `approvals-inbox`. Single-card focus on the oldest open poll, with queue
  * navigation. Reads live polls straight from gatewayStore (state.sync +
  * poll.updated) — no parallel store, same source of truth as PollsRail.
  */

@@ -1,6 +1,5 @@
 /**
- * Agent Dossiers — dashboard surface v1.1 (Wave 7 stretch, M4,
- * docs/DESIGN-agent-dossiers-surface.md). `GET /api/dossiers/:seatId` only —
+ * Agent Dossiers — dashboard surface v1.1. `GET /api/dossiers/:seatId` only —
  * no create/edit/delete route exists or is planned for v1 ("acceptance
  * freezes it"). Returns RAW MARKDOWN + mtime; the gateway never renders
  * markdown to HTML (F9) — the client renders through the same audited
@@ -28,7 +27,7 @@ export interface DossiersRouteContext {
  * this file set) — when dossiersDir is unset the handler itself 404s on
  * every request, which is indistinguishable from the route not existing at
  * all from a caller's point of view ("Feature absent (not erroring) when
- * dossiersDir unset" — design doc acceptance). REST, loopback trust model,
+ * dossiersDir unset" — the original design acceptance). REST, loopback trust model,
  * same as every other /api/* route (no new auth system).
  */
 export function registerDossiersRoute(fastify: FastifyInstance, ctx: DossiersRouteContext): void {

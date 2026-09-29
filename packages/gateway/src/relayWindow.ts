@@ -1,5 +1,5 @@
 /**
- * Relay history windowing (docs/DESIGN-token-budgets.md §3). The actual fix
+ * Relay history windowing. The actual fix
  * for hermes's context growth is per-turn session rotation (see the hermes
  * adapter's send()) — this module supplies the OTHER half: what context an
  * agent WITHOUT native session persistence should see each turn, capped at a

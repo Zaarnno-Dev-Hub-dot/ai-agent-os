@@ -1,7 +1,7 @@
 /**
  * Proof-of-Life Verifier — the anti-placeholder system.
  *
- * Owner: Fable 5 (PRD §9). Reference implementation; do not modify without review.
+ * Owner: Fable 5. Reference implementation; do not modify without review.
  *
  * Status state machine (verifier-owned; adapters and UI never set status):
  * REGISTERED → CONNECTING → CHALLENGED → VERIFIED → (STALE ↔ VERIFIED) → OFFLINE | FAILED

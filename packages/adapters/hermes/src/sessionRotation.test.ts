@@ -3,7 +3,7 @@ import type { AdapterConfig } from '@agent-os/shared';
 import { hermesAdapter } from './index.js';
 
 /**
- * Regression test for Milestone C item 5a (docs/DESIGN-token-budgets.md §3):
+ * Regression test for Milestone C item 5a:
  * hermes's send() must rotate to a fresh session_id EVERY chat turn instead
  * of reusing config.sessionId, because hermes's session_id accumulates the
  * whole conversation server-side (root cause of the 220k/78k/58k tokens-in

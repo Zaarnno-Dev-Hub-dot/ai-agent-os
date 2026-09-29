@@ -3,8 +3,7 @@ import type { Poll, PollAttachment } from '../store/gatewayStore';
 import { isActionCovered, type ReviewPolicyMode } from './reviewPolicy';
 
 /**
- * Presentation helpers for the Approvals Inbox rich card (Wave 6,
- * docs/DESIGN-approvals-app-v2.md). Pure functions only — no store reads, no
+ * Presentation helpers for the Approvals Inbox rich card. Pure functions only — no store reads, no
  * DOM — so they're plain-unit-testable without React or a live gatewayStore.
  */
 
@@ -53,7 +52,7 @@ export function resolveApproveRejectOptionIds(poll: Poll): { approveId?: string;
   };
 }
 
-/** Open polls oldest-first for the single-card inbox default (design doc §5: "oldest open poll first"). */
+/** Open polls oldest-first for the single-card inbox default. */
 export function openPollsOldestFirst(polls: Poll[]): Poll[] {
   return polls.filter((p) => p.status === 'open').sort((a, b) => a.createdAt - b.createdAt);
 }
@@ -78,7 +77,7 @@ export function pollSettledAt(poll: Poll): number {
   return poll.createdAt;
 }
 
-// --- attachmentSrc: the security boundary (design doc correction #1, MUSTFIX) ---
+// --- attachmentSrc: the security boundary ---
 //
 // A poll's attachments come from whoever calls POST /api/polls — any local
 // script or agent, not just this dashboard's own code. The race branch's
@@ -143,7 +142,7 @@ function isAllowedImageDataUri(raw: string): boolean {
  * `url` and `data` are both attacker-reachable (see module doc above) and are
  * checked with the SAME allowlist — neither is "more trusted" than the other.
  * `kind` is checked FIRST and independently: only 'image'/'graph' ever
- * resolve to anything (design doc correction #1, reopened — see module doc).
+ * resolve to anything.
  */
 export function attachmentSrc(att: PollAttachment): string | undefined {
   if (att.kind !== 'image' && att.kind !== 'graph') return undefined;
@@ -170,7 +169,7 @@ export function attachmentSrc(att: PollAttachment): string | undefined {
  * as a pure function so the security-relevant decision — which of the three
  * branches an attachment resolves to, and whether a link is ever eligible —
  * is itself unit-tested here rather than living untested inline in JSX
- * (design doc correction #1, reopened: the previous gap shipped because
+ * (the original design correction #1, reopened: the previous gap shipped because
  * attachmentSrc() had 28 tests and the component that actually renders its
  * output had none). 'table'/'text' render `.data` as inert text directly
  * (never through attachmentSrc); 'image'/'graph' resolve through
@@ -195,7 +194,7 @@ export function resolveAttachmentView(att: PollAttachment): AttachmentView {
 }
 
 // ============================================================================
-// Two-Reviewer Policy (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md).
+// Two-Reviewer Policy.
 // PollReview lives in @agent-os/shared (the one named exception to the
 // frozen-file rule — see types.ts's own doc comment); the DISPLAY logic
 // here is gateway/UI-local, same split as everything else in this file.
@@ -205,7 +204,7 @@ export function resolveAttachmentView(att: PollAttachment): AttachmentView {
  * A review chip's display bucket — collapses PollReview's
  * status/parseOk/verdict fields into ONE thing the chip renders. The
  * `unparseable` bucket is DISTINCT from every verdict value and is never
- * reachable from a parse failure coercing to 'approve' (design doc F/B3):
+ * reachable from a parse failure coercing to 'approve':
  * `verdict` only ever flows through here when `parseOk` is true.
  */
 export type ReviewChipStatus = 'pending' | 'approve' | 'concerns' | 'reject' | 'unparseable' | 'timed-out';
@@ -260,8 +259,7 @@ export function hasAnyAttachedReview(reviews: PollReview[]): boolean {
 }
 
 /**
- * Zero-verdict soft-confirm gate (design doc "Soft speed-bump" — "when a
- * COVERED card has ZERO attached verdicts"): true only for a workshop poll
+ * Zero-verdict soft-confirm gate: true only for a workshop poll
  * whose action type (`workshop-propose`) is CURRENTLY covered under
  * `reviewPolicyMode` — via `isActionCovered`, not `source` alone — with
  * zero attached verdicts. `source === 'workshop'` is necessary but NOT
@@ -273,7 +271,7 @@ export function hasAnyAttachedReview(reviews: PollReview[]): boolean {
  * 2026-07-09). A poll that was never subject to review at all (a plain
  * local/paperclip poll, OR a workshop poll that is currently uncovered)
  * never shows this friction — there is nothing to be missing. No typed
- * friction anywhere (design doc): this only decides WHETHER to show a
+ * friction anywhere: this only decides WHETHER to show a
  * one-click inline confirm, never blocks the decide.
  */
 export function needsZeroVerdictConfirm(poll: Poll, reviews: PollReview[], reviewPolicyMode: ReviewPolicyMode): boolean {

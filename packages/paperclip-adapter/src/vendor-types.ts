@@ -2,9 +2,7 @@
  * VENDORED TYPE SHIMS — NOT part of the design's §3 file layout.
  *
  * `@paperclipai/adapter-utils` is not installable from this machine/network
- * (see BUILDER_PROTOCOL: "if the package is not on npm reachable from here,
- * vendor MINIMAL local type shims ... do NOT copy large source files
- * wholesale"). This file hand-trims ONLY the type signatures this package
+ *. This file hand-trims ONLY the type signatures this package
  * actually consumes, transcribed from the read-only reference clone at
  * ..\..\Paperclip\repo\packages\adapter-utils\src\types.ts (session-compaction.ts
  * for AdapterSessionManagement) — never copied wholesale, no runtime code.

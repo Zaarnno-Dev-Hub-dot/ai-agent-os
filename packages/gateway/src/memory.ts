@@ -1,9 +1,9 @@
 /**
- * Vault memory layer v1 (docs/DESIGN-memory-read.md) — READ-ONLY over the
+ * Vault memory layer v1 — READ-ONLY over the
  * Obsidian vault at VAULT_ROOT. The gateway never writes to the vault: every
  * function here only ever calls readFileSync/statSync/readdirSync against it.
  *
- * Scale note from the design doc: 55 files / ~163KB — a simple in-process
+ * Scale note from the original design: 55 files / ~163KB — a simple in-process
  * index rebuilt on a timer is plenty; no search infra, no deps.
  */
 
@@ -12,12 +12,12 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import type { Dirent } from 'fs';
 import { join, normalize, relative, resolve, sep } from 'path';
 
-/** Default vault location (docs/DESIGN-memory-read.md, scout-verified). Overridable for tests. */
+/** Default vault location. Overridable for tests. */
 export const DEFAULT_VAULT_ROOT = './data/vault';
 
 /**
  * Directories/files indexed, relative to the vault root — EXACTLY the set
- * named in the design doc. Anything else in the vault (Hermes/, User/,
+ * named in the original design. Anything else in the vault (Hermes/, User/,
  * Memory/skills/, Memory/YouTube-Transcriptions/, etc.) is simply never
  * scanned, on top of the explicit exclusions below — an allowlist, not a
  * denylist, so a new top-level folder someone adds to the vault tomorrow
@@ -36,7 +36,7 @@ const INDEXED_ROOT_FILES = ['README.md', 'memory.md', 'INDEX.md'] as const;
 
 /**
  * Never indexed/surfaced even though they'd otherwise fall under an
- * INDEXED_DIRS prefix (docs/DESIGN-memory-read.md hard rules):
+ * INDEXED_DIRS prefix:
  * - Memory/Review: 7-day veto window for pending facts — surfacing them as
  *   context to an agent would violate the vault's own governance.
  * - Memory/Inbox: uncurated.
@@ -124,7 +124,7 @@ function isPrivacyDenylistedPath(relPosixPath: string, denylist: PrivacyDenylist
 
 /**
  * PROSE-surface content scan (spec §2c v3.1) for note BODIES. The Q6 ruling
- * (TOP-TIER-QUEUE 2026-07-14) established that path screening alone is never
+ * established that path screening alone is never
  * sufficient for body-inlining surfaces — build-memory-graph.mjs has enforced
  * that since; this gateway (which feeds note bodies into agent context via
  * search/get/pinned blocks) did NOT until 2026-07-21 (R2 panel finding).
@@ -169,14 +169,14 @@ export interface MemoryNoteMeta {
 interface IndexedNote extends MemoryNoteMeta {
   /** Raw file body (frontmatter block stripped), used for search + redaction + rendering. */
   body: string;
-  /** File size in bytes (statSync) — Memory Galaxy graph node field only (docs/DESIGN-studio-dock.md §4). */
+  /** File size in bytes (statSync) — Memory Galaxy graph node field only. */
   size: number;
   /** Raw `[[wikilink]]` targets extracted from the body at index time, UNRESOLVED. Resolution against the current governance-filtered note set happens lazily (rebuildLinkIndexes/resolveWikilinkTarget) since a target's note may be indexed later in the same walk. */
   rawLinks: string[];
 }
 
 /**
- * Obsidian wikilink target extraction (docs/DESIGN-studio-dock.md §4):
+ * Obsidian wikilink target extraction:
  * `[[Target]]`, `[[Target|Alias]]`, `[[Target#Heading]]`,
  * `[[Target#Heading|Alias]]` — captures Target only, trimmed. An embed
  * (`![[Target]]`) is matched too (the `!` sits outside the `[[...]]`
@@ -196,7 +196,7 @@ export function extractWikilinkTargets(body: string): string[] {
   return out;
 }
 
-/** Memory Galaxy graph shapes (docs/DESIGN-studio-dock.md §4 `GET /api/memory/graph`). */
+/** Memory Galaxy graph shapes. */
 export interface MemoryGraphNode {
   id: string;
   title: string;
@@ -213,11 +213,11 @@ export interface MemoryGraphLink {
 export interface MemoryGraph {
   nodes: MemoryGraphNode[];
   links: MemoryGraphLink[];
-  /** Total governance-filtered notes currently indexed, BEFORE the node cap — lets the UI show "showing N of M" per the design doc's performance guard. */
+  /** Total governance-filtered notes currently indexed, BEFORE the node cap — lets the UI show "showing N of M" per the original design's performance guard. */
   totalNotes: number;
 }
 
-/** Performance guard from the design doc: render at most this many newest nodes. */
+/** Performance guard from the original design: render at most this many newest nodes. */
 export const MEMORY_GRAPH_NODE_CAP = 500;
 
 /** Normalize a relative vault path to forward slashes for stable comparisons and wire output. */
@@ -239,8 +239,7 @@ function isPiiPath(relPosixPath: string): boolean {
  * Handles the flat `key: value` shape used across the vault plus YAML block
  * scalars (`summary: |` followed by indented lines) — good enough for this
  * vault's own frontmatter, not a general YAML parser. Anything it can't parse
- * is simply left absent; callers always have the filename/mtime/body fallback
- * (design doc: "14/52 notes lack frontmatter — must not error").
+ * is simply left absent; callers always have the filename/mtime/body fallback.
  */
 function parseFrontmatter(raw: string): { attrs: Record<string, string>; body: string } {
   if (!raw.startsWith('---')) return { attrs: {}, body: raw };
@@ -301,7 +300,7 @@ function titleFromFilename(relPosixPath: string): string {
  * insensitive heading-line match) from markdown body. A "section" runs from
  * its heading line up to (but not including) the next heading of equal-or-
  * shallower level, or end of file. Pattern-based, not a one-time scan result
- * — the design doc is explicit that this must hold even though today's vault
+ * — the original design is explicit that this must hold even though today's vault
  * has no live Secrets section.
  */
 export function redactSections(body: string): string {
@@ -394,7 +393,7 @@ export class MemoryIndex {
   // Reloaded every reindex() by loadPrivacyDenylist() — see isPrivacyDenylistedPath().
   private privacyDenylist: PrivacyDenylist = EMPTY_DENYLIST;
 
-  // Wikilink resolution maps (Memory Galaxy, docs/DESIGN-studio-dock.md §4),
+  // Wikilink resolution maps,
   // rebuilt every reindex() from the CURRENT (governance-filtered) note set
   // — see rebuildLinkIndexes(). Lowercase key -> vault-relative path.
   private linkIndexByPath = new Map<string, string>();
@@ -478,7 +477,7 @@ export class MemoryIndex {
   }
 
   /**
-   * Memory Galaxy graph (docs/DESIGN-studio-dock.md §4). Nodes = indexed
+   * Memory Galaxy graph. Nodes = indexed
    * notes (governance exclusions already applied — an excluded note is never
    * in `this.notes`), newest `limit` by mtime. Links = resolved wikilink
    * edges whose BOTH endpoints fall inside the capped node set — a link to a
@@ -762,7 +761,7 @@ export function roomsPinning(pins: MemoryPins, path: string): string[] {
 // Outbound compose-layer helper — pinned-context prepend
 // ============================================================================
 
-/** Hard caps from the design doc: at most 3 pinned notes, 4k chars each, applied POST-redaction. */
+/** Hard caps from the original design: at most 3 pinned notes, 4k chars each, applied POST-redaction. */
 export const MAX_PINNED_NOTES = 3;
 export const MAX_PINNED_NOTE_CHARS = 4000;
 
@@ -773,7 +772,7 @@ export const MAX_PINNED_NOTE_CHARS = 4000;
  * (e.g. re-indexed away) — callers should treat '' as "nothing to prepend"
  * and leave the outbound content untouched.
  *
- * Caps applied here (design doc, both explicit): first MAX_PINNED_NOTES
+ * Caps applied here: first MAX_PINNED_NOTES
  * pinned paths for the room (in pin order), each truncated to
  * MAX_PINNED_NOTE_CHARS characters of its POST-REDACTION markdown.
  */

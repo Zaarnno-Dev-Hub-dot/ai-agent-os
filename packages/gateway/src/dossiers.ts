@@ -1,6 +1,5 @@
 /**
- * Agent Dossiers — dashboard surface v1.1 (Wave 7 stretch, M4,
- * docs/DESIGN-agent-dossiers-surface.md). Pure/testable half: the seatId ->
+ * Agent Dossiers — dashboard surface v1.1. Pure/testable half: the seatId ->
  * dossier-file resolution and every security rule around it (roster
  * allowlist BEFORE any path is built, realpath containment, symlink
  * rejection). No Fastify/no reading the file's CONTENT here — the route (fs
@@ -9,15 +8,14 @@
  *
  * The convention this reads from (Team/dossiers/README.md): one file per
  * SEAT MANIFEST, `<manifest-id>.md` — not per seat. `grok-build.md` covers
- * both `grok-build` and `grok-build#<instance>` (docs/DESIGN-agent-dossiers-
- * surface.md F11).
+ * both `grok-build` and `grok-build#<instance>`.
  */
 
 import { lstatSync, realpathSync } from 'fs';
 import { isAbsolute, join, relative } from 'path';
 import { isValidInstanceId } from './agents.js';
 
-/** Env override, same idiom as gatewayLocalConfig.ts's other knobs. Unset (default) = feature hidden entirely (design doc spec). */
+/** Env override, same idiom as gatewayLocalConfig.ts's other knobs. Unset (default) = feature hidden entirely. */
 export const DOSSIERS_DIR_ENV = 'AGENT_OS_DOSSIERS_DIR';
 
 export function dossiersDir(): string | undefined {
@@ -51,15 +49,14 @@ export function splitSeatId(seatId: string): ParsedSeatId | null {
 
 /**
  * True when `seatId` is a legal seat id for a manifest this build KNOWS
- * about (design doc F10: "STATIC ROSTER id set (manifests + known
+ * about (the original design F10: "STATIC ROSTER id set (manifests + known
  * instances) — NOT the connected/VERIFIED set, so a down seat's dossier
  * stays readable"). `knownManifestIds` is the STATIC set (agents.ts's
  * knownManifestIds()) — never the live `agents` Map, which only reflects who
  * is currently connected.
  *
  * "Known instances" is a syntactic check, not an enumerable list: instances
- * are inherently open-ended (docs/DESIGN-multi-instance.md — any seat can be
- * connected under any legal slug at any time), so a seatId with an instance
+ * are inherently open-ended, so a seatId with an instance
  * suffix is accepted whenever that suffix is a well-formed instance slug
  * (isValidInstanceId) of a known manifest — the file it resolves to is the
  * manifest-level dossier regardless of which instance asked.

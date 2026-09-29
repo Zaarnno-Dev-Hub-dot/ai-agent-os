@@ -2,7 +2,7 @@ import { gatewayHttpOrigin } from './gatewayOrigin';
 
 const GATEWAY_ORIGIN = gatewayHttpOrigin();
 
-/** Mirrors packages/gateway/src/memory.ts's MemoryGraph* shapes (docs/DESIGN-studio-dock.md §4). */
+/** Mirrors packages/gateway/src/memory.ts's MemoryGraph* shapes. */
 export interface MemoryGraphNode {
   id: string;
   title: string;

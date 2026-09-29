@@ -72,7 +72,7 @@ export function renderMarkdown(content: string): string {
 }
 
 /**
- * Dossier-mode render hardening (docs/DESIGN-agent-dossiers-surface.md F12).
+ * Dossier-mode render hardening.
  * A dossier is a peer-authored markdown file with no image-hosting mechanism
  * of its own — any `img` inside one is necessarily an EXTERNAL url, and
  * `img src` is a classic render-time read-receipt beacon (an agent could

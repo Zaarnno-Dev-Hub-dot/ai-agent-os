@@ -1,10 +1,10 @@
 /**
- * OpenClaw adapter — `ws` flavor (PRD §3, §3.1). Connects as an operator client
+ * OpenClaw adapter — `ws` flavor. Connects as an operator client
  * to the OpenClaw Gateway's typed WebSocket API (default ws://127.0.0.1:18789),
  * declares role + scopes at handshake, and targets a named OpenClaw agent
  * workspace via `agentId`.
  *
- * LIVE-TEST STATUS (disclose unprompted per BUILDER_PROTOCOL.md): at build
+ * LIVE-TEST STATUS: at build
  * time, `Test-NetConnection 127.0.0.1 18789` failed (nothing listening) and no
  * `openclaw` CLI was found on PATH. This adapter is code-complete against the
  * protocol documented at docs.openclaw.ai/gateway/protocol (fetched 2026-07-04)

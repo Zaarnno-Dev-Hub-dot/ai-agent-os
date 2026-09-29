@@ -2,7 +2,7 @@
  * Core type definitions for Agent OS
  * These types are shared across gateway, UI, and all adapters.
  *
- * Owner: Fable 5 (PRD §9). Do not modify without review — adapters and the
+ * Owner: Fable 5. Do not modify without review — adapters and the
  * verifier are built against this exact surface.
  *
  * IMPORTANT: No painted status. Every ONLINE dot is earned via proof-of-life.
@@ -83,7 +83,7 @@ export interface AdapterManifest {
   /**
    * How this agent's usage is billed — budgets bind on TOKENS for every kind;
    * USD is a display-only estimate computed from the declared rates and shown
-   * only for 'api' agents (see docs/DESIGN-token-budgets.md). Optional until
+   * only for 'api' agents. Optional until
    * Phase 3 wires the meters; adapters should declare it as they touch their
    * manifests. Absent ⇒ treated as 'subscription' (token bar, no dollar line).
    */
@@ -143,8 +143,7 @@ export interface AgentSession {
    */
   health(): Promise<HealthReport>;
   /**
-   * G2b (2026-08-01, docs/Wave-Backlog/2026-08-01-burn/G2B-AUTH-CONTRACT.md, Amendment "A-adapter";
-   * R4 revision): optional current-task verb, gateway-pulled on its own ~30s timer
+   * G2b: optional current-task verb, gateway-pulled on its own ~30s timer
    * (proofOfLife.ts's sweepActivityOnce/startActivitySweep) — separate from health's 10-minute sweep,
    * since a verb sampled every 10 minutes would miss nearly every real turn.
    * Identity is the session object being polled — there is no client-supplied agentId anywhere on
@@ -519,7 +518,7 @@ export type ClientEvent =
       /**
        * instanceId enables multiple seats of the SAME harness (multiple
        * subscriptions): seat id = manifestId when absent/'main', else
-       * `${manifestId}#${instanceId}` (docs/DESIGN-multi-instance.md).
+       * `${manifestId}#${instanceId}`.
        * Slug rule [a-z0-9-]{1,16}; gateway validates. instanceLabel is the
        * display name for the seat's card.
        */
@@ -532,9 +531,9 @@ export type ClientEvent =
   | { type: 'memory.pin'; payload: { messageId: string; vaultPath: string } }
   /** Set a seat's pinned model where the adapter supports it (claude-code, grok-build). Takes effect next turn. */
   | { type: 'agent.set-model'; payload: { agentId: string; model: string } }
-  /** Room autoroute: un-addressed human messages go to the router instead of nobody (docs/DESIGN-router.md). */
+  /** Room autoroute: un-addressed human messages go to the router instead of nobody. */
   | { type: 'room.autoroute'; payload: { roomId: string; enabled: boolean } }
-  /** Vault memory layer v1 (docs/DESIGN-memory-read.md) — read-only over the Obsidian vault. */
+  /** Vault memory layer v1 — read-only over the Obsidian vault. */
   | { type: 'memory.search'; payload: { query: string } }
   | { type: 'memory.get'; payload: { path: string } }
   | { type: 'memory.pin-note'; payload: { roomId: string; path: string } }
@@ -553,10 +552,10 @@ export type ServerEvent =
   | { type: 'cost.event'; payload: CostEvent }
   | { type: 'budget.warning'; payload: { roomId: string; percent: number } }
   | { type: 'budget.exceeded'; payload: { roomId: string } }
-  /** Memory layer v1 responses (docs/DESIGN-memory-read.md). */
+  /** Memory layer v1 responses. */
   | { type: 'memory.results'; payload: { query: string; items: Array<{ path: string; title: string; summary?: string; mtime: number }> } }
   | { type: 'memory.note'; payload: { path: string; title: string; markdown: string; pinnedInRooms: string[] } }
-  /** One line per routed decision, for the routing log UI (docs/DESIGN-router.md). */
+  /** One line per routed decision, for the routing log UI. */
   | { type: 'router.routed'; payload: { roomId: string; messageId: string; cls: string; chosen: string; tried: string[] } }
   | { type: 'kanban.task-created'; payload: KanbanTask }
   | { type: 'kanban.task-moved'; payload: { taskId: string; column: KanbanColumn } }
@@ -593,9 +592,9 @@ export interface CostEvent {
 }
 
 // ============================================================================
-// Two-Reviewer Policy v1.1 (Wave 7 M3, docs/DESIGN-two-reviewer-policy.md).
+// Two-Reviewer Policy v1.1.
 // ADDITIVE ONLY — the one named exception to this file's frozen-zone rule
-// (BUILDER_PROTOCOL.md / the wave 7 dispatch): these two types, nothing else
+//: these two types, nothing else
 // edited above. Everything else about the feature — the poll_reviews/
 // poll_review_findings persistence, selection/timeout/parsing logic, the
 // gateway routes, the review-room wiring — lives OUTSIDE this frozen module
@@ -609,7 +608,7 @@ export interface CostEvent {
  * Strict verdict literal — the fenced ```verdict block's `verdict` field
  * must be EXACTLY one of these three strings (case-sensitive, no synonyms).
  * Anything else fails to parse and renders `unparseable`, never coerced to
- * 'approve' (design doc F/B3).
+ * 'approve'.
  */
 export type ReviewVerdict = 'approve' | 'concerns' | 'reject';
 
@@ -628,7 +627,7 @@ export interface PollReview {
   pollId: string;
   /** The reviewer seat id (agents map key — may be `manifestId#instanceId`). */
   seatId: string;
-  /** manifest.harness at selection time — the "family" the design doc's exclusion/diversity rules key off. */
+  /** manifest.harness at selection time — the "family" the original design's exclusion/diversity rules key off. */
   family: string;
   /** 1 = attested tool-less reviewer; 2 = verified full-harness reviewer, different family from slot 1. */
   slot: 1 | 2;

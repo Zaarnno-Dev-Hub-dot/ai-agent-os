@@ -2,9 +2,9 @@ import type { AdapterManifest } from '@agent-os/shared';
 
 /**
  * Grok Build ships two documented interfaces for external tools driving it as
- * a service (PRD §3.1): ACP (Agent Client Protocol) and a headless mode with
+ * a service: ACP (Agent Client Protocol) and a headless mode with
  * `streaming-json` output. This adapter implements the headless cli-stream
- * flavor (see index.ts / cliProcess.ts) — see docs/GROK_BUILD_SPIKE.md for the
+ * flavor (see index.ts / cliProcess.ts) —  for the
  * ACP-vs-headless spike notes and why cli-stream shipped first.
  *
  * trust: 'verify-outputs' per PRD §3.1 — the operator's observation that Grok Build
