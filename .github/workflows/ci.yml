@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - name: Build (shared, adapters, gateway, UI)
         run: npm run build
+      - name: Lint
+        run: npm run lint
       - name: Type-check every workspace
         run: npm run verify
       - name: Tests

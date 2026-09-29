@@ -549,7 +549,9 @@ describe('deferPoll', () => {
   });
 
   it('caps at MAX_POLL_DEFERRALS: the 4th attempt is rejected and leaves the poll unchanged', () => {
-    let { state, pollId } = seededWithExpiry(10_000);
+    const seeded = seededWithExpiry(10_000);
+    let state = seeded.state;
+    const pollId = seeded.pollId;
     expect(MAX_POLL_DEFERRALS).toBe(3);
     for (let i = 0; i < MAX_POLL_DEFERRALS; i++) {
       const result = deferPoll(state, pollId, 'human');

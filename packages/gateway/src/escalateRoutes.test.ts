@@ -220,6 +220,7 @@ function addSeat(h: Harness, seatId: string): FakeSession {
   return session;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function post(baseUrl: string, body: unknown): Promise<{ status: number; json: any; headers: Headers }> {
   const res = await fetch(`${baseUrl}/api/escalate`, {
     method: 'POST',

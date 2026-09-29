@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- minimal local typings for sql.js */
 declare module 'sql.js' {
   interface Database {
     exec(sql: string): any[];

@@ -152,6 +152,7 @@ async function buildHarness(projectRoot: string): Promise<Harness> {
   } as unknown as Harness;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function propose(baseUrl: string, body: unknown): Promise<{ status: number; json: any }> {
   const res = await fetch(`${baseUrl}/api/workshop/propose`, {
     method: 'POST',

@@ -73,6 +73,7 @@ async function buildHarness(): Promise<Harness> {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function getDossier(baseUrl: string, seatId: string): Promise<{ status: number; json: any }> {
   const res = await fetch(`${baseUrl}/api/dossiers/${encodeURIComponent(seatId)}`);
   const json = await res.json().catch(() => undefined);

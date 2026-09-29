@@ -261,7 +261,7 @@ describe('sendClientEvent — humanToken auto-attach', () => {
     const ws = fakeOpenSocket();
     useStore.setState({ ws: ws as unknown as WebSocket, connected: true });
 
-    useStore.getState().sendClientEvent({ type: 'poll.decide', payload: { pollId: 'p1', optionId: 'approve' } } as any);
+    useStore.getState().sendClientEvent({ type: 'poll.decide', payload: { pollId: 'p1', optionId: 'approve' } } as never);
 
     const sent = JSON.parse(ws.send.mock.calls[0][0] as string);
     expect(sent.payload.humanToken).toBe('the-real-token');
@@ -272,7 +272,7 @@ describe('sendClientEvent — humanToken auto-attach', () => {
     const ws = fakeOpenSocket();
     useStore.setState({ ws: ws as unknown as WebSocket, connected: true });
 
-    useStore.getState().sendClientEvent({ type: 'agent.disconnect', payload: { agentId: 'hermes' } } as any);
+    useStore.getState().sendClientEvent({ type: 'agent.disconnect', payload: { agentId: 'hermes' } } as never);
 
     const sent = JSON.parse(ws.send.mock.calls[0][0] as string);
     expect(sent.payload.humanToken).toBe('the-real-token');
@@ -285,7 +285,7 @@ describe('sendClientEvent — humanToken auto-attach', () => {
     useStore.getState().sendClientEvent({
       type: 'chat.send',
       payload: { roomId: 'r1', message: { role: 'user', senderId: 'human', content: 'hi' } },
-    } as any);
+    } as never);
 
     const sent = JSON.parse(ws.send.mock.calls[0][0] as string);
     expect(sent.payload.humanToken).toBeUndefined();
@@ -296,7 +296,7 @@ describe('sendClientEvent — humanToken auto-attach', () => {
     const ws = fakeOpenSocket();
     useStore.setState({ ws: ws as unknown as WebSocket, connected: true });
 
-    useStore.getState().sendClientEvent({ type: 'poll.decide', payload: { pollId: 'p1', optionId: 'approve' } } as any);
+    useStore.getState().sendClientEvent({ type: 'poll.decide', payload: { pollId: 'p1', optionId: 'approve' } } as never);
 
     const sent = JSON.parse(ws.send.mock.calls[0][0] as string);
     expect(sent.payload.humanToken).toBeUndefined();

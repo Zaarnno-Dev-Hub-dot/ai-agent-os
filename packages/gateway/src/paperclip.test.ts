@@ -14,7 +14,7 @@ import {
   runPaperclipPollOnce,
   type PaperclipApproval,
 } from './paperclip.js';
-import { createPoll, hasApprovalRef, type PollsState } from './polls.js';
+import { hasApprovalRef, type PollsState } from './polls.js';
 
 function freshDataDir(): string {
   return mkdtempSync(join(tmpdir(), 'paperclip-test-'));

@@ -90,6 +90,12 @@ function applySchema(db: SqlDatabase) {
     try {
       db.run(stmt);
     } catch (e) {
+      // A migration like `ALTER TABLE ... ADD COLUMN x` always reports "duplicate column name" on a database that
+      // already has the column (every fresh database, since CREATE TABLE includes it). That is the expected outcome,
+      // not a problem worth logging.
+      const message = e instanceof Error ? e.message : String(e);
+      const sql = stmt.replace(/^(?:\s*--[^\n]*\n)+/, '');
+      if (/^\s*ALTER\s+TABLE\b[^;]*\bADD\s+COLUMN\b/i.test(sql) && /duplicate column name/i.test(message)) return;
       if (!ddlFailuresLoggedThisBoot.has(index)) {
         ddlFailuresLoggedThisBoot.add(index);
         console.error(

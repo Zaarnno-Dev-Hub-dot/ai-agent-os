@@ -227,6 +227,7 @@ function makeRoom(id: string, name: string, memberIds: string[]): Room {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function post(baseUrl: string, body: unknown): Promise<{ status: number; json: any }> {
   const res = await fetch(`${baseUrl}/api/bridge/wake`, {
     method: 'POST',
@@ -664,6 +665,16 @@ describe('REGRESSION (review findings, wave3/f2a): concurrent wakes + mention in
 describe('B7 — closes the two residual holes (real relay.ts + bridge.ts pipeline)', () => {
   let h: Harness;
 
+  // Wait for an observable condition instead of assuming a fixed delay is long enough: on a busy machine the
+  // HTTP request and the relay worker can take longer than any hard-coded pause.
+  const until = async (cond: () => boolean, ms = 3000): Promise<void> => {
+    const t0 = Date.now();
+    while (!cond()) {
+      if (Date.now() - t0 > ms) throw new Error('timed out waiting for condition');
+      await new Promise((r) => setTimeout(r, 5));
+    }
+  };
+
   beforeEach(async () => {
     h = await buildHarness();
   });
@@ -707,6 +718,9 @@ describe('B7 — closes the two residual holes (real relay.ts + bridge.ts pipeli
       idempotencyKey: 'k-hole1-1',
     });
 
+    // Job A must actually have been handed to the seat before it can "reply".
+    await until(() => session.sent.length === 1);
+
     // Let job A "complete" as if the seat replied to the mention — its reply
     // carries replyTo = mentionMsg.id (relay.ts's commitAgentReply stamps the
     // TRUE trigger), which must NOT match the bridge wait's triggerMessageId.
@@ -722,6 +736,9 @@ describe('B7 — closes the two residual holes (real relay.ts + bridge.ts pipeli
       new Promise((r) => setTimeout(r, 20)).then(() => 'pending' as const),
     ]);
     expect(stillPending).toBe('pending');
+
+    // Job B is only sent to the seat once job A has finished; wait for that before answering it.
+    await until(() => session.sent.length === 2);
 
     // Now let job B (the real bridge turn) complete with its own reply.
     session.emit({ type: 'token', delta: 'the real bridge reply', messageId: 'm-bridge-reply' });

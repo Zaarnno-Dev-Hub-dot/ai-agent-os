@@ -9,7 +9,7 @@ import {
   HealthReport,
   OutboundMessage,
 } from '@agent-os/shared';
-import { ollamaManifest, type AttestedAdapterManifest } from './manifest.js';
+import { ollamaManifest } from './manifest.js';
 import { chatCompletion, type ChatMessage, timeoutMsOf } from './httpClient.js';
 import type { AttestedNonceChallenge, AttestedProbeChallenge } from './attestedProtocol.js';
 

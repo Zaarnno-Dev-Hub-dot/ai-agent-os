@@ -9,7 +9,7 @@ import { openDatabase, type SqlDatabase } from './db.js';
 import type { RelayDeps, RoomRelayState } from './relay.js';
 import { registerAgentRelay, unregisterAgentRelay } from './relay.js';
 import { BridgeWaitRegistry } from './bridge.js';
-import { createPoll, findPoll, type Poll, type PollsState } from './polls.js';
+import { findPoll, type Poll, type PollsState } from './polls.js';
 import { handlePollDecide, registerPollsRoute, type PollsRouteContext } from './pollsRoutes.js';
 import { registerWorkshopRoute, type WorkshopRouteContext } from './workshopRoutes.js';
 import {
@@ -21,7 +21,7 @@ import {
   startPollReview,
   type PollReviewRouteContext,
 } from './pollReviews.js';
-import { loadPollReviewById, loadReviewsForPoll } from './pollReviewsDb.js';
+import { loadReviewsForPoll } from './pollReviewsDb.js';
 import type { ReviewPolicyState } from './reviewPolicy.js';
 
 // ============================================================================
@@ -324,6 +324,7 @@ function autoReplyOnce(session: FakeSession, text: string, delayMs = 10): void {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function propose(baseUrl: string, body: unknown): Promise<{ status: number; json: any }> {
   const res = await fetch(`${baseUrl}/api/workshop/propose`, {
     method: 'POST',
@@ -449,7 +450,7 @@ describe('end-to-end: propose -> 2 verdicts -> human decide', () => {
     const h2 = await buildFullHarness({ wakeTimeoutMs: 60, cardDeadlineMs: 500 });
     try {
       h2.agents.set('claude-code', verifiedState(baseManifest('claude-code', 'claude-code')));
-      const ollama = addReviewerSeat(h2, 'ollama', attestedManifest('ollama'));
+      addReviewerSeat(h2, 'ollama', attestedManifest('ollama'));
       addReviewerSeat(h2, 'ollama2', attestedManifest('ollama2')); // substitute candidate for slot 1
       const grok = addReviewerSeat(h2, 'grok-build', baseManifest('grok-build', 'grok-build'));
       autoReplyOnce(grok, verdictReply('approve')); // slot 2 responds promptly
@@ -647,7 +648,7 @@ describe('onSeatDisconnected — disconnect-mid-review', () => {
 
     const proposer = 'claude-code';
     agents.set(proposer, verifiedState(baseManifest(proposer, 'claude-code')));
-    const ollama = addBareSeat(agents, relayDeps, 'ollama', attestedManifest('ollama'));
+    addBareSeat(agents, relayDeps, 'ollama', attestedManifest('ollama'));
     addBareSeat(agents, relayDeps, 'ollama2', attestedManifest('ollama2')); // would-be substitute — must NOT be used
     addBareSeat(agents, relayDeps, 'grok-build', baseManifest('grok-build', 'grok-build')); // never replies either — irrelevant to this assertion
 
@@ -661,7 +662,7 @@ describe('onSeatDisconnected — disconnect-mid-review', () => {
       status: 'open',
       source: 'workshop',
     };
-    let pollsState: PollsState = { polls: [poll] };
+    const pollsState: PollsState = { polls: [poll] };
     let reviewPolicy: ReviewPolicyState = { mode: 'mutations' };
     const ctx: PollReviewRouteContext = {
       relayDeps,

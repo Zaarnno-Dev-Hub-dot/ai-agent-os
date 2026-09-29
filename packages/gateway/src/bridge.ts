@@ -19,7 +19,7 @@ import type { FastifyInstance } from 'fastify';
 import type { AgentState, Message, Room } from '@agent-os/shared';
 import type { RelayDeps } from './relay.js';
 import { relayMessageToAgents } from './relay.js';
-import { insertMessage, persistDatabase, saveRoom } from './db.js';
+import { insertMessage, persistDatabase } from './db.js';
 import type { LoopsConfig } from './loop.js';
 
 /** Bridge sender id — a non-agent/system sender, same class as 'system' (postSystemLine), never registered in the `agents` map. */

@@ -218,6 +218,7 @@ function makeRoom(id: string, memberIds: string[] = ['human']): Room {
   return { id, name: `Room ${id}`, type: 'group', memberIds, createdAt: Date.now(), updatedAt: Date.now(), turnCap: 12 };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function post(baseUrl: string, body: unknown): Promise<{ status: number; json: any }> {
   const res = await fetch(`${baseUrl}/api/polls`, {
     method: 'POST',
@@ -254,6 +255,7 @@ async function waitForSeatReplyCommits(h: Harness, seatId: string, count: number
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped JSON body in a test helper
 async function postWithdraw(baseUrl: string, pollId: string, body: unknown): Promise<{ status: number; json: any }> {
   const res = await fetch(`${baseUrl}/api/polls/${encodeURIComponent(pollId)}/withdraw`, {
     method: 'POST',

@@ -12,6 +12,9 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import type { Dirent } from 'fs';
 import { join, normalize, posix, relative, resolve, sep } from 'path';
 
+// The vault is an optional feature, so its absence is worth one line per run, not one per index refresh.
+let vaultMissingLogged = false;
+
 /** Default vault location. Overridable for tests. */
 export const DEFAULT_VAULT_ROOT = './data/vault';
 
@@ -263,7 +266,7 @@ function parseFrontmatter(raw: string): { attrs: Record<string, string>; body: s
       const collected: string[] = [];
       let j = i + 1;
       while (j < lines.length && (lines[j].startsWith('  ') || lines[j].trim() === '')) {
-        collected.push(lines[j].replace(/^  /, ''));
+        collected.push(lines[j].replace(/^ {2}/, ''));
         j++;
       }
       attrs[key] = collected.join('\n').trim();
@@ -427,7 +430,10 @@ export class MemoryIndex {
 
     const found: IndexedNote[] = [];
     if (!existsSync(this.vaultRoot)) {
-      console.error(`[memory] vault root not found: ${this.vaultRoot} — index empty`);
+      if (!vaultMissingLogged) {
+        vaultMissingLogged = true;
+        console.warn(`[memory] no memory vault at ${this.vaultRoot} (it is optional) — index empty`);
+      }
       this.notes = [];
       this.rebuildLinkIndexes();
       return;

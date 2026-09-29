@@ -20,7 +20,6 @@ import {
   GatewayConfig,
   Message,
   Room,
-  ServerEnvelope,
   toAgentSummary,
   type AdapterConfig,
   type AgentStatus,

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify from 'fastify';
 import { EphemeralPresenceRegistry } from './ephemeral.js';
 import { registerEphemeralRoutes } from './ephemeralRoutes.js';
 

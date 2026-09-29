@@ -24,7 +24,6 @@
  */
 import {
   AdapterConfig,
-  AdapterError,
   AgentAdapter,
   AgentEvent,
   AgentSession,
