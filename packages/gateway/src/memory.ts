@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import type { Dirent } from 'fs';
-import { join, normalize, relative, resolve, sep } from 'path';
+import { join, normalize, posix, relative, resolve, sep } from 'path';
 
 /** Default vault location. Overridable for tests. */
 export const DEFAULT_VAULT_ROOT = './data/vault';
@@ -367,6 +367,14 @@ export function resolveVaultPath(vaultRoot: string, candidateRelPath: string): s
   // Reject null bytes and backslash/forward-slash absolute-path starts outright —
   // resolve() would otherwise happily anchor an absolute path outside the vault.
   if (candidateRelPath.includes('\0')) return null;
+
+  // Judge Windows-style input the same way on every platform. On POSIX a backslash is an ordinary filename
+  // character, so `..\..\.env` or `C:\Windows\x` would otherwise resolve to a strange in-vault name instead of
+  // being refused, and the guard would behave differently depending on where the gateway runs.
+  const unified = candidateRelPath.replace(/\\/g, '/');
+  if (/^[A-Za-z]:/.test(unified)) return null;
+  const flat = posix.normalize(unified);
+  if (flat === '..' || flat.startsWith('../') || flat.startsWith('/')) return null;
 
   const root = resolve(vaultRoot);
   const candidate = resolve(root, candidateRelPath);
