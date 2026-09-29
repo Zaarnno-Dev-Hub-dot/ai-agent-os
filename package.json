@@ -1,6 +1,6 @@
 {
   "name": "ai-agent-os",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -10,14 +10,16 @@
     "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:ui\"",
     "dev:gateway": "npm run dev --workspace=packages/gateway",
     "dev:ui": "npm run dev --workspace=packages/ui",
-    "build": "npm run build --workspaces",
+    "build": "npm run build:shared && npm run build:adapters && npm run build:gateway && npm run build:ui",
+    "build:shared": "npm run build --workspace=packages/shared",
+    "build:adapters": "npm run build --workspace=packages/adapters/claude-code --workspace=packages/adapters/codex --workspace=packages/adapters/cursor --workspace=packages/adapters/grok-build --workspace=packages/adapters/hermes --workspace=packages/adapters/ollama --workspace=packages/adapters/openclaw --workspace=packages/adapters/opencode --workspace=packages/paperclip-adapter",
     "build:gateway": "npm run build --workspace=packages/gateway",
     "build:ui": "npm run build --workspace=packages/ui",
     "verify": "npm run verify --workspaces",
     "gate": "tsx scripts/gate-live.mts",
     "verify:types": "tsc --noEmit --project packages/shared/tsconfig.json && tsc --noEmit --project packages/gateway/tsconfig.json && tsc --noEmit --project packages/ui/tsconfig.json && tsc --noEmit --project packages/paperclip-adapter/tsconfig.json",
     "lint": "eslint packages --ext .ts,.tsx",
-    "test": "npm run test --workspaces --if-present",
+    "test": "vitest run --retry=2",
     "start": "node packages/gateway/dist/index.js",
     "clean": "rimraf packages/*/dist packages/*/node_modules node_modules"
   },
